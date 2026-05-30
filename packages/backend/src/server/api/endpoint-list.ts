@@ -39,6 +39,8 @@ export * as 'admin/drive/clean-remote-files' from './endpoints/admin/drive/clean
 export * as 'admin/drive/cleanup' from './endpoints/admin/drive/cleanup.js';
 export * as 'admin/drive/files' from './endpoints/admin/drive/files.js';
 export * as 'admin/drive/show-file' from './endpoints/admin/drive/show-file.js';
+export * as 'admin/email-audit/clear' from './endpoints/admin/email-audit/clear.js';
+export * as 'admin/email-audit/list' from './endpoints/admin/email-audit/list.js';
 export * as 'admin/emoji/add' from './endpoints/admin/emoji/add.js';
 export * as 'admin/emoji/add-aliases-bulk' from './endpoints/admin/emoji/add-aliases-bulk.js';
 export * as 'admin/emoji/copy' from './endpoints/admin/emoji/copy.js';
@@ -192,6 +194,7 @@ export * as 'drive/folders/find' from './endpoints/drive/folders/find.js';
 export * as 'drive/folders/show' from './endpoints/drive/folders/show.js';
 export * as 'drive/folders/update' from './endpoints/drive/folders/update.js';
 export * as 'drive/stream' from './endpoints/drive/stream.js';
+export * as 'email/quota' from './endpoints/email/quota.js';
 export * as 'email-address/available' from './endpoints/email-address/available.js';
 export * as 'emoji' from './endpoints/emoji.js';
 export * as 'emojis' from './endpoints/emojis.js';

@@ -11,18 +11,14 @@ export const meta = {
 	tags: ['admin'],
 
 	requireCredential: true,
-	requireModerator: true,
-	kind: 'write:admin:send-email',
+	requireAdmin: true,
+	kind: 'write:admin:meta',
 } as const;
 
 export const paramDef = {
 	type: 'object',
-	properties: {
-		to: { type: 'string' },
-		subject: { type: 'string' },
-		text: { type: 'string' },
-	},
-	required: ['to', 'subject', 'text'],
+	properties: {},
+	required: [],
 } as const;
 
 @Injectable()
@@ -30,14 +26,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 	constructor(
 		private emailService: EmailService,
 	) {
-		super(meta, paramDef, async (ps, me, token, file, cleanup, ip) => {
-			await this.emailService.sendEmail(ps.to, ps.subject, ps.text, ps.text, {
-				source: 'admin/send-email',
-				category: 'admin',
-				requestIp: ip,
-				userId: me.id,
-				username: me.username,
-			});
+		super(meta, paramDef, async () => {
+			await this.emailService.clearEmailAuditRecords();
 		});
 	}
 }
