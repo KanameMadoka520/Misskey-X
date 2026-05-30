@@ -13,7 +13,7 @@ export const comment = `<!--
                          |___|
  Thank you for using Misskey!
  If you are reading this message... how about joining the development?
- https://github.com/misskey-dev/misskey
+ https://github.com/KanameMadoka520/Misskey-X
 
 -->`;
 

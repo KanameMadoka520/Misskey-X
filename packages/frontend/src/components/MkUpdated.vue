@@ -35,7 +35,7 @@ const isBeta = version.includes('-beta') || version.includes('-alpha') || versio
 function whatIsNew() {
 	modal.value?.close();
 	if (isBeta) {
-		window.open(`https://github.com/misskey-dev/misskey/releases/tag/${version}`, '_blank');
+		window.open(`https://github.com/KanameMadoka520/Misskey-X/releases/tag/${version}`, '_blank');
 	} else {
 		window.open(`https://misskey-hub.net/docs/releases/#_${version.replace(/\./g, '')}`, '_blank');
 	}

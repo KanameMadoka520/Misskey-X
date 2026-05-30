@@ -4,7 +4,7 @@
 	"codename": "nasubi",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/misskey-dev/misskey.git"
+		"url": "https://github.com/KanameMadoka520/Misskey-X.git"
 	},
 	"packageManager": "pnpm@11.1.2",
 	"workspaces": [

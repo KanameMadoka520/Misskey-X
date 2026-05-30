@@ -56,12 +56,12 @@ export const packedMetaLiteSchema = {
 		repositoryUrl: {
 			type: 'string',
 			optional: false, nullable: true,
-			default: 'https://github.com/misskey-dev/misskey',
+			default: 'https://github.com/KanameMadoka520/Misskey-X',
 		},
 		feedbackUrl: {
 			type: 'string',
 			optional: false, nullable: true,
-			default: 'https://github.com/misskey-dev/misskey/issues/new',
+			default: 'https://github.com/KanameMadoka520/Misskey-X/issues/new',
 		},
 		defaultDarkTheme: {
 			type: 'string',
