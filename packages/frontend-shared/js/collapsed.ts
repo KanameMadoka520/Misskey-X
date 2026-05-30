@@ -5,6 +5,11 @@
 
 import * as Misskey from 'misskey-js';
 
+const NOTE_COLLAPSE_LINE_LIMIT = 20;
+const NOTE_COLLAPSE_TEXT_LENGTH_LIMIT = 1500;
+const NOTE_COLLAPSE_URL_COUNT_THRESHOLD = 8;
+const NOTE_COLLAPSE_FILE_COUNT_THRESHOLD = 10;
+
 export function shouldCollapsed(note: Misskey.entities.Note, urls: string[]): boolean {
 	if (note.cw != null) {
 		return false;
@@ -16,18 +21,18 @@ export function shouldCollapsed(note: Misskey.entities.Note, urls: string[]): bo
 			note.text.includes('$[x3') ||
 			note.text.includes('$[x4') ||
 			note.text.includes('$[scale') ||
-			note.text.split('\n').length > 9 ||
-			note.text.length > 500
+			note.text.split('\n').length > NOTE_COLLAPSE_LINE_LIMIT ||
+			note.text.length > NOTE_COLLAPSE_TEXT_LENGTH_LIMIT
 		) {
 			return true;
 		}
 	}
 
-	if (urls.length >= 4) {
+	if (urls.length >= NOTE_COLLAPSE_URL_COUNT_THRESHOLD) {
 		return true;
 	}
 
-	if (note.files != null && note.files.length >= 5) {
+	if (note.files != null && note.files.length >= NOTE_COLLAPSE_FILE_COUNT_THRESHOLD) {
 		return true;
 	}
 
