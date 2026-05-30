@@ -192,7 +192,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div>
 			<div v-if="tab === 'replies'">
 				<div v-if="!repliesLoaded" style="padding: 16px">
-					<MkButton style="margin: 0 auto;" primary rounded @click="loadReplies">{{ i18n.ts.loadReplies }}</MkButton>
+					<MkLoading/>
 				</div>
 				<MkNoteSub v-for="note in replies" :key="note.id" :note="note" :class="$style.reply" :detail="true"/>
 			</div>
@@ -239,7 +239,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 </template>
 
 <script lang="ts" setup>
-import { computed, inject, markRaw, provide, ref, useTemplateRef } from 'vue';
+import { computed, inject, markRaw, onMounted, provide, ref, useTemplateRef } from 'vue';
 import * as mfm from 'mfm-js';
 import * as Misskey from 'misskey-js';
 import { isLink } from '@@/js/is-link.js';
@@ -633,6 +633,7 @@ function blur() {
 const repliesLoaded = ref(false);
 
 function loadReplies() {
+	if (repliesLoaded.value) return;
 	repliesLoaded.value = true;
 	misskeyApi('notes/children', {
 		noteId: appearNote.id,
@@ -641,6 +642,10 @@ function loadReplies() {
 		replies.value = res;
 	});
 }
+
+onMounted(() => {
+	loadReplies();
+});
 
 const conversationLoaded = ref(false);
 

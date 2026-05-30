@@ -64,7 +64,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkCwButton v-model="showContent" :text="appearNote.text" :renote="appearNote.renote" :files="appearNote.files" :poll="appearNote.poll" style="margin: 4px 0;"/>
 				</p>
 				<div v-show="appearNote.cw == null || showContent" :class="[{ [$style.contentCollapsed]: collapsed }]">
-					<div :class="$style.text">
+					<div :class="$style.text" @click="goToDetailByContentClick">
 						<span v-if="appearNote.isHidden" style="opacity: 0.5">({{ i18n.ts.private }})</span>
 						<MkA v-if="appearNote.replyId" :class="$style.replyIcon" :to="`/notes/${appearNote.replyId}`"><i class="ti ti-arrow-back-up"></i></MkA>
 						<Mfm
@@ -154,6 +154,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<button v-if="prefer.s.showClipButtonInNoteFooter" ref="clipButton" :class="$style.footerButton" class="_button" @mousedown.prevent="clip()">
 					<i class="ti ti-paperclip"></i>
 				</button>
+				<MkA v-if="!mock" v-tooltip="i18n.ts.details" :to="notePage(appearNote)" :class="$style.footerButton" class="_button" :aria-label="i18n.ts.details">
+					<i class="ti ti-info-circle"></i>
+				</MkA>
 				<button ref="menuButton" :class="$style.footerButton" class="_button" @mousedown.prevent="showMenu()">
 					<i class="ti ti-dots"></i>
 				</button>
@@ -244,6 +247,7 @@ import { prefer } from '@/preferences.js';
 import { getPluginHandlers } from '@/plugin.js';
 import { DI } from '@/di.js';
 import { globalEvents } from '@/events.js';
+import { useRouter } from '@/router.js';
 
 const props = withDefaults(defineProps<{
 	note: Misskey.entities.Note;
@@ -266,6 +270,7 @@ const tl_withSensitive = inject<Ref<boolean>>('tl_withSensitive', ref(true));
 const inChannel = inject(DI.inChannel, null);
 const currentClip = inject<Ref<Misskey.entities.Clip> | null>('currentClip', null);
 const currentAntenna = inject<Ref<Misskey.entities.Antenna | null> | null>('currentAntenna', null);
+const router = useRouter();
 
 let note = deepClone(props.note);
 
@@ -619,6 +624,39 @@ function showMenu(): void {
 
 	const { menu, cleanup } = getNoteMenu({ note: note, translating, translation, currentClip: currentClip?.value, currentAntenna: currentAntenna?.value ?? undefined });
 	os.popupMenu(menu, menuButton.value).then(focus).finally(cleanup);
+}
+
+function shouldIgnoreDetailClick(target: EventTarget | null): boolean {
+	const element = target instanceof HTMLElement ? target : target instanceof Node ? target.parentElement : null;
+	if (element == null) return true;
+	if (isLink(element)) return true;
+
+	return element.closest([
+		'button',
+		'input',
+		'textarea',
+		'select',
+		'option',
+		'label',
+		'summary',
+		'img',
+		'video',
+		'audio',
+		'canvas',
+		'[role="button"]',
+		'[data-no-note-detail]',
+	].join(',')) != null;
+}
+
+function goToDetailByContentClick(ev: MouseEvent): void {
+	if (props.mock) return;
+	if (ev.defaultPrevented) return;
+	if (ev.button !== 0) return;
+	if (ev.metaKey || ev.altKey || ev.ctrlKey || ev.shiftKey) return;
+	if (window.getSelection()?.toString() !== '') return;
+	if (shouldIgnoreDetailClick(ev.target)) return;
+
+	router.pushByPath(notePage(appearNote));
 }
 
 async function clip(): Promise<void> {
