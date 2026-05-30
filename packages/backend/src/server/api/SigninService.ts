@@ -50,9 +50,30 @@ export class SigninService {
 
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'New login / ログインがありました',
-					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。',
-					'There is a new login. If you do not recognize this login, update the security status of your account, including changing your password. / 新しいログインがありました。このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ状態を更新してください。');
+				const message = [
+					'你的账号刚刚发生了一次新的登录。',
+					'如果这不是你本人操作，请尽快更新账号安全设置，包括修改密码。',
+					'',
+					'---------------',
+					'',
+					'There was a new login to your account.',
+					'If you do not recognize this login, please update your account security settings, including changing your password.',
+					'',
+					'---------------',
+					'',
+					'アカウントに新しいログインがありました。',
+					'このログインに心当たりがない場合は、パスワードを変更するなど、アカウントのセキュリティ設定を更新してください。',
+				];
+
+				this.emailService.sendEmail(profile.email, '新的登录 / New login / 新しいログイン',
+					message.join('<br>'),
+					message.join('\n'), {
+						source: 'signin-flow',
+						category: 'security',
+						requestIp: request.ip,
+						userId: user.id,
+						username: user.username,
+					});
 			}
 		});
 
@@ -64,4 +85,3 @@ export class SigninService {
 		} satisfies Misskey.entities.SigninFlowResponse;
 	}
 }
-

@@ -58,7 +58,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private idService: IdService,
 		private emailService: EmailService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
+		super(meta, paramDef, async (ps, me, _token, file, cleanup, ip) => {
 			const user = await this.usersRepository.findOneBy({
 				usernameLower: ps.username.toLowerCase(),
 				host: IsNull(),
@@ -91,9 +91,47 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 			const link = `${this.config.url}/reset-password/${token}`;
 
-			this.emailService.sendEmail(ps.email, 'Password reset requested',
-				`To reset password, please click this link:<br><a href="${link}">${link}</a>`,
-				`To reset password, please click this link: ${link}`);
+			this.emailService.sendEmail(ps.email, '密码重置请求 / Password reset requested / パスワード再設定リクエスト',
+				[
+					'如需重置密码，请点击下面的链接：',
+					`<a href="${link}">${link}</a>`,
+					'如果这不是你本人操作，请忽略这封邮件。',
+					'',
+					'---------------',
+					'',
+					'To reset your password, please click this link:',
+					`<a href="${link}">${link}</a>`,
+					'If you did not request this, please ignore this email.',
+					'',
+					'---------------',
+					'',
+					'パスワードを再設定するには、以下のリンクをクリックしてください：',
+					`<a href="${link}">${link}</a>`,
+					'この操作に心当たりがない場合は、このメールを無視してください。',
+				].join('<br>'),
+				[
+					'如需重置密码，请点击下面的链接：',
+					link,
+					'如果这不是你本人操作，请忽略这封邮件。',
+					'',
+					'---------------',
+					'',
+					'To reset your password, please click this link:',
+					link,
+					'If you did not request this, please ignore this email.',
+					'',
+					'---------------',
+					'',
+					'パスワードを再設定するには、以下のリンクをクリックしてください：',
+					link,
+					'この操作に心当たりがない場合は、このメールを無視してください。',
+				].join('\n'), {
+					source: 'request-reset-password',
+					category: 'security',
+					requestIp: ip,
+					userId: user.id,
+					username: user.username,
+				});
 		});
 	}
 }

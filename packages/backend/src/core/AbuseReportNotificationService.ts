@@ -114,11 +114,33 @@ export class AbuseReportNotificationService implements OnApplicationShutdown {
 			await Promise.all(
 				abuseReports.map(it => {
 					// TODO: 送信処理はJobQueue化したい
+					const comment = sanitizeHtml(it.comment);
+					const message = [
+						'收到新的举报。',
+						'',
+						comment,
+						'',
+						'---------------',
+						'',
+						'New abuse report received.',
+						'',
+						comment,
+						'',
+						'---------------',
+						'',
+						'新しい通報を受信しました。',
+						'',
+						comment,
+					];
 					return this.emailService.sendEmail(
 						mailAddress,
-						'New Abuse Report',
-						sanitizeHtml(it.comment),
-						sanitizeHtml(it.comment),
+						'新的举报 / New abuse report / 新しい通報',
+						message.join('<br>'),
+						message.join('\n'),
+						{
+							source: 'abuse-report-notification',
+							category: 'moderation',
+						},
 					);
 				}),
 			);

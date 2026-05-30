@@ -80,7 +80,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private userAuthService: UserAuthService,
 		private globalEventService: GlobalEventService,
 	) {
-		super(meta, paramDef, async (ps, me) => {
+		super(meta, paramDef, async (ps, me, _token, file, cleanup, ip) => {
 			const token = ps.token;
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: me.id });
 
@@ -133,9 +133,41 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 				const link = `${this.config.url}/verify-email/${code}`;
 
-				this.emailService.sendEmail(ps.email, 'Email verification',
-					`To verify email, please click this link:<br><a href="${link}">${link}</a>`,
-					`To verify email, please click this link: ${link}`);
+				this.emailService.sendEmail(ps.email, '邮箱验证 / Email verification / メールアドレスの確認',
+					[
+						'请点击下面的链接完成邮箱验证：',
+						`<a href="${link}">${link}</a>`,
+						'',
+						'---------------',
+						'',
+						'To verify your email address, please click this link:',
+						`<a href="${link}">${link}</a>`,
+						'',
+						'---------------',
+						'',
+						'メールアドレスを確認するには、以下のリンクをクリックしてください：',
+						`<a href="${link}">${link}</a>`,
+					].join('<br>'),
+					[
+						'请点击下面的链接完成邮箱验证：',
+						link,
+						'',
+						'---------------',
+						'',
+						'To verify your email address, please click this link:',
+						link,
+						'',
+						'---------------',
+						'',
+						'メールアドレスを確認するには、以下のリンクをクリックしてください：',
+						link,
+					].join('\n'), {
+						source: 'i/update-email',
+						category: 'account',
+						requestIp: ip,
+						userId: me.id,
+						username: me.username,
+					});
 			}
 
 			return iObj;

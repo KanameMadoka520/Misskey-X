@@ -200,9 +200,40 @@ export class SignupApiService {
 
 			const link = `${this.config.url}/signup-complete/${code}`;
 
-			this.emailService.sendEmail(emailAddress!, 'Signup',
-				`To complete signup, please click this link:<br><a href="${link}">${link}</a>`,
-				`To complete signup, please click this link: ${link}`);
+			this.emailService.sendEmail(emailAddress!, '完成注册 / Complete signup / 登録を完了',
+				[
+					'请点击下面的链接完成注册：',
+					`<a href="${link}">${link}</a>`,
+					'',
+					'---------------',
+					'',
+					'To complete signup, please click this link:',
+					`<a href="${link}">${link}</a>`,
+					'',
+					'---------------',
+					'',
+					'登録を完了するには、以下のリンクをクリックしてください：',
+					`<a href="${link}">${link}</a>`,
+				].join('<br>'),
+				[
+					'请点击下面的链接完成注册：',
+					link,
+					'',
+					'---------------',
+					'',
+					'To complete signup, please click this link:',
+					link,
+					'',
+					'---------------',
+					'',
+					'登録を完了するには、以下のリンクをクリックしてください：',
+					link,
+				].join('\n'), {
+					source: 'signup',
+					category: 'account',
+					requestIp: request.ip,
+					username,
+				});
 
 			if (ticket) {
 				await this.registrationTicketsRepository.update(ticket.id, {

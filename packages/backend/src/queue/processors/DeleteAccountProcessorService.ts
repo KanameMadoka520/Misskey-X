@@ -142,9 +142,26 @@ export class DeleteAccountProcessorService {
 		{ // Send email notification
 			const profile = await this.userProfilesRepository.findOneByOrFail({ userId: user.id });
 			if (profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, 'Account deleted',
+				const message = [
+					'你的账号已经被删除。',
+					'',
+					'---------------',
+					'',
 					'Your account has been deleted.',
-					'Your account has been deleted.');
+					'',
+					'---------------',
+					'',
+					'あなたのアカウントは削除されました。',
+				];
+
+				this.emailService.sendEmail(profile.email, '账号已删除 / Account deleted / アカウントが削除されました',
+					message.join('<br>'),
+					message.join('\n'), {
+						source: 'delete-account-processor',
+						category: 'system',
+						userId: user.id,
+						username: user.username,
+					});
 			}
 		}
 

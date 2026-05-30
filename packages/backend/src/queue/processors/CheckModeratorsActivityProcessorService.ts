@@ -38,11 +38,19 @@ export type ModeratorInactivityRemainingTime = {
 };
 
 function generateModeratorInactivityMail(remainingTime: ModeratorInactivityRemainingTime) {
-	const subject = 'Moderator Inactivity Warning / モデレーター不在の通知';
+	const subject = '管理员活跃度提醒 / Moderator inactivity warning / モデレーター不在の通知';
 
+	const timeVariantZh = remainingTime.asDays === 0 ? `${remainingTime.asHours} 小时` : `${remainingTime.asDays} 天`;
 	const timeVariant = remainingTime.asDays === 0 ? `${remainingTime.asHours} hours` : `${remainingTime.asDays} days`;
 	const timeVariantJa = remainingTime.asDays === 0 ? `${remainingTime.asHours} 時間` : `${remainingTime.asDays} 日間`;
 	const message = [
+		'致各位管理员：',
+		'',
+		`管理员已经有一段时间没有活动。如果接下来还有 ${timeVariantZh} 没有管理员活动，本站将切换为邀请制。`,
+		'如果不希望切换为邀请制，请登录 Misskey 以更新你的最后活跃时间。',
+		'',
+		'---------------',
+		'',
 		'To Moderators,',
 		'',
 		`A moderator has been inactive for a period of time. If there are ${timeVariant} of inactivity left, it will switch to invitation only.`,
@@ -68,9 +76,16 @@ function generateModeratorInactivityMail(remainingTime: ModeratorInactivityRemai
 }
 
 function generateInvitationOnlyChangedMail() {
-	const subject = 'Change to Invitation-Only / 招待制に変更されました';
+	const subject = '已切换为邀请制 / Changed to invitation-only / 招待制に変更されました';
 
 	const message = [
+		'致各位管理员：',
+		'',
+		`由于 ${MODERATOR_INACTIVITY_LIMIT_DAYS} 天内未检测到管理员活动，本站已经切换为邀请制。`,
+		'如需取消邀请制，请访问控制面板进行设置。',
+		'',
+		'---------------',
+		'',
 		'To Moderators,',
 		'',
 		`Changed to invitation only because no moderator activity was detected for ${MODERATOR_INACTIVITY_LIMIT_DAYS} days.`,
@@ -225,7 +240,12 @@ export class CheckModeratorsActivityProcessorService {
 		for (const moderator of moderators) {
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text, {
+					source: 'moderator-inactivity-warning',
+					category: 'moderation',
+					userId: moderator.id,
+					username: moderator.username,
+				});
 			}
 		}
 
@@ -258,7 +278,12 @@ export class CheckModeratorsActivityProcessorService {
 
 			const profile = moderatorProfiles.get(moderator.id);
 			if (profile && profile.email && profile.emailVerified) {
-				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text);
+				this.emailService.sendEmail(profile.email, mail.subject, mail.html, mail.text, {
+					source: 'moderator-invitation-only-changed',
+					category: 'moderation',
+					userId: moderator.id,
+					username: moderator.username,
+				});
 			}
 		}
 
