@@ -17,14 +17,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<div :class="$style.main">
 		<div :class="$style.title">{{ i18n.ts.didYouLikeMisskey }}</div>
 		<div :class="$style.text">
-			<I18n :src="i18n.ts.pleaseDonate" tag="span">
-				<template #host>
-					{{ instance.name ?? host }}
-				</template>
-			</I18n>
-			<div style="margin-top: 0.2em;">
-				<MkLink target="_blank" url="https://misskey-hub.net/docs/for-users/resources/donate/">{{ i18n.ts.learnMore }}</MkLink>
-			</div>
+			{{ i18n.ts.pleaseDonate }}
 		</div>
 		<div class="_buttons">
 			<MkButton @click="close">{{ i18n.ts.remindMeLater }}</MkButton>
@@ -37,12 +30,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import MkButton from '@/components/MkButton.vue';
-import MkLink from '@/components/MkLink.vue';
-import { host } from '@@/js/config.js';
 import { i18n } from '@/i18n.js';
 import * as os from '@/os.js';
 import { miLocalStorage } from '@/local-storage.js';
-import { instance } from '@/instance.js';
 
 const emit = defineEmits<{
 	(ev: 'closed'): void;
