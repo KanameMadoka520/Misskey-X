@@ -22,6 +22,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
 				<i :class="$style.itemIcon" class="ti ti-home ti-fw" style="view-transition-name: navbar-homeIcon;"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
 			</MkA>
+			<MkA v-tooltip.noDelay.right="i18n.ts.communityChangelog" :class="$style.item" :activeClass="$style.active" :to="COMMUNITY_CHANGELOG_PATH">
+				<i :class="$style.itemIcon" class="ti ti-clipboard-list ti-fw" style="view-transition-name: navbar-communityChangelog;"></i><span :class="$style.itemText">{{ i18n.ts.communityChangelog }}</span>
+			</MkA>
 			<template v-for="item in prefer.r.menu.value">
 				<div v-if="item === '-'" :class="$style.divider"></div>
 				<component
@@ -116,6 +119,7 @@ import { useRouter } from '@/router.js';
 import { prefer } from '@/preferences.js';
 import { getAccountMenu } from '@/accounts.js';
 import { $i } from '@/i.js';
+import { COMMUNITY_CHANGELOG_PATH } from '@/community-changelog.js';
 
 const router = useRouter();
 

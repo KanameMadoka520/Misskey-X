@@ -54,6 +54,7 @@ import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
+import { COMMUNITY_CHANGELOG_CHANNEL_ID, COMMUNITY_CHANGELOG_POST_PERMISSION_ERROR_ID } from '@/misc/community-changelog.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
@@ -415,6 +416,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 
 			if (channel == null) {
 				throw new IdentifiableError('bfa3905b-25f5-4894-b430-da331a490e4b', 'No such channel');
+			}
+
+			if (channel.id === COMMUNITY_CHANGELOG_CHANNEL_ID && !(await this.roleService.isAdministrator(user))) {
+				throw new IdentifiableError(COMMUNITY_CHANGELOG_POST_PERMISSION_ERROR_ID, 'Only administrators can post to the community changelog');
 			}
 		}
 

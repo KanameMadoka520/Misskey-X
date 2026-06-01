@@ -29,6 +29,9 @@ export const ROUTE_DEF = [{
 	path: '/timeline',
 	component: PageTimeline,
 }, {
+	path: '/community-changelog',
+	component: page(() => import('@/pages/community-changelog.vue')),
+}, {
 	path: '/@:username/pages/:pageName(*)',
 	component: page(() => import('@/pages/page.vue')),
 }, {

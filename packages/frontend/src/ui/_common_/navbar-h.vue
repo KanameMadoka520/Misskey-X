@@ -13,6 +13,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-click-anime v-tooltip="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
 				<i :class="$style.itemIcon" class="ti ti-home ti-fw"></i>
 			</MkA>
+			<MkA v-click-anime v-tooltip="i18n.ts.communityChangelog" :class="$style.item" :activeClass="$style.active" :to="COMMUNITY_CHANGELOG_PATH">
+				<i :class="$style.itemIcon" class="ti ti-clipboard-list ti-fw"></i>
+			</MkA>
 			<template v-for="item in menu">
 				<div v-if="item === '-'" :class="$style.divider"></div>
 				<component :is="navbarItemDef[item].to ? 'MkA' : 'button'" v-else-if="navbarItemDef[item] && (navbarItemDef[item].show == null || navbarItemDef[item].show.value !== false)" v-click-anime v-tooltip="navbarItemDef[item].title" class="_button" :class="$style.item" :activeClass="$style.active" :to="navbarItemDef[item].to" v-on="navbarItemDef[item].action ? { click: navbarItemDef[item].action } : {}">
@@ -58,6 +61,7 @@ import { prefer } from '@/preferences.js';
 import { getAccountMenu } from '@/accounts.js';
 import { $i } from '@/i.js';
 import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
+import { COMMUNITY_CHANGELOG_PATH } from '@/community-changelog.js';
 
 const WINDOW_THRESHOLD = 1400;
 

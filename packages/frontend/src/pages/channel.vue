@@ -36,7 +36,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkInfo v-if="channel.isArchived" warn>{{ i18n.ts.thisChannelArchived }}</MkInfo>
 
 			<!-- スマホ・タブレットの場合、キーボードが表示されると投稿が見づらくなるので、デスクトップ場合のみ自動でフォーカスを当てる -->
-			<MkPostForm v-if="$i && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
+			<MkPostForm v-if="canPostToChannel && prefer.r.showFixedPostFormInChannel.value" :channel="channel" class="post-form _panel" fixed :autofocus="deviceKind === 'desktop'"/>
 
 			<MkStreamingNotesTimeline :key="channelId" src="channel" :channel="channelId"/>
 		</div>
@@ -59,7 +59,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</div>
 	<template #footer>
-		<div :class="$style.footer">
+		<div v-if="canPostToChannel" :class="$style.footer">
 			<div class="_spacer" style="--MI_SPACER-w: 700px; --MI_SPACER-min: 16px; --MI_SPACER-max: 16px;">
 				<div class="_buttonsCenter">
 					<MkButton inline rounded primary gradate @click="openPostForm()"><i class="ti ti-pencil"></i> {{ i18n.ts.postToTheChannel }}</MkButton>
@@ -99,6 +99,7 @@ import { notesSearchAvailable } from '@/utility/check-permissions.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { useRouter } from '@/router.js';
 import { Paginator } from '@/utility/paginator.js';
+import { COMMUNITY_CHANGELOG_CHANNEL_ID } from '@/community-changelog.js';
 
 const router = useRouter();
 
@@ -113,6 +114,7 @@ const favorited = ref(false);
 const searchQuery = ref('');
 const searchPaginator = shallowRef();
 const searchKey = ref('');
+const canPostToChannel = computed(() => $i != null && (props.channelId !== COMMUNITY_CHANGELOG_CHANNEL_ID || $i.isAdmin === true));
 const featuredPaginator = markRaw(new Paginator('notes/featured', {
 	limit: 10,
 	computedParams: computed(() => ({

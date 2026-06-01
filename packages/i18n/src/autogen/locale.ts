@@ -133,6 +133,10 @@ export interface Locale extends ILocale {
      */
     "timeline": string;
     /**
+     * コミュニティ更新履歴
+     */
+    "communityChangelog": string;
+    /**
      * 自己紹介はありません
      */
     "noAccountDescription": string;
