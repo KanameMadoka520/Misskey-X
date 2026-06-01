@@ -439,20 +439,18 @@ export function getNoteMenu(props: {
 			action: () => toggleThreadMute(true),
 		}));
 
-		if (appearNote.userId === $i.id) {
-			if (($i.pinnedNoteIds ?? []).includes(appearNote.id)) {
-				menuItems.push({
-					icon: 'ti ti-pinned-off',
-					text: i18n.ts.unpin,
-					action: () => togglePin(false),
-				});
-			} else {
-				menuItems.push({
-					icon: 'ti ti-pin',
-					text: i18n.ts.pin,
-					action: () => togglePin(true),
-				});
-			}
+		if (($i.pinnedNoteIds ?? []).includes(appearNote.id)) {
+			menuItems.push({
+				icon: 'ti ti-pinned-off',
+				text: i18n.ts.unpin,
+				action: () => togglePin(false),
+			});
+		} else if (appearNote.userId === $i.id) {
+			menuItems.push({
+				icon: 'ti ti-pin',
+				text: i18n.ts.pin,
+				action: () => togglePin(true),
+			});
 		}
 
 		menuItems.push({

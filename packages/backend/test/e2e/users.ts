@@ -8,9 +8,10 @@ process.env.NODE_ENV = 'test';
 import * as assert from 'assert';
 import { beforeAll, beforeEach, describe, test } from 'vitest';
 import { inspect } from 'node:util';
-import { api, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
+import { api, initTestDb, post, role, signup, successfulApiCall, uploadFile } from '../utils.js';
 import type * as misskey from 'misskey-js';
 import { DEFAULT_POLICIES } from '@/core/RoleService.js';
+import { MiNote } from '@/models/Note.js';
 
 describe('ユーザー', () => {
 	// エンティティとしてのユーザーを主眼においたテストを記述する
@@ -545,6 +546,28 @@ describe('ユーザー', () => {
 		const response2 = await successfulApiCall({ endpoint: 'i/unpin', parameters, user: alice });
 		const expected2 = meDetailed(alice, false);
 		assert.deepStrictEqual(response2, expected2);
+	});
+
+	test('を書き換えることができる(ピン止め後に所有者が変わったノートのピン解除)', async () => {
+		const note = await post(alice, { text: 'test ownership changed after pinning' });
+		const parameters = { noteId: note.id };
+		const pinned = await successfulApiCall({ endpoint: 'i/pin', parameters, user: alice });
+		assert.ok(pinned.pinnedNoteIds.includes(note.id));
+
+		const connection = await initTestDb(true);
+		try {
+			await connection.getRepository(MiNote).update(note.id, {
+				userId: bob.id,
+			});
+		} finally {
+			await connection.destroy();
+		}
+
+		const response = await successfulApiCall({ endpoint: 'i/unpin', parameters, user: alice });
+		assert.ok(!response.pinnedNoteIds.includes(note.id));
+
+		const profile = await show(alice.id, alice);
+		assert.ok(!profile.pinnedNoteIds.includes(note.id));
 	});
 
 	//#endregion

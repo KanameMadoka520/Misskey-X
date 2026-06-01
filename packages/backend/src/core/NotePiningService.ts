@@ -89,20 +89,25 @@ export class NotePiningService {
 	 */
 	@bindThis
 	public async removePinned(user: { id: MiUser['id']; host: MiUser['host']; }, noteId: MiNote['id']) {
-	// Fetch unpinee
+		const pining = await this.userNotePiningsRepository.findOneBy({
+			userId: user.id,
+			noteId,
+		});
+
+		if (pining == null) {
+			throw new IdentifiableError('b302d4cf-c050-400a-bbb3-be208681f40c', 'No such note.');
+		}
+
+		// Fetch unpinee. A note can remain pinned by this user even after ownership changes.
 		const note = await this.notesRepository.findOneBy({
 			id: noteId,
-			userId: user.id,
 		});
 
 		if (note == null) {
 			throw new IdentifiableError('b302d4cf-c050-400a-bbb3-be208681f40c', 'No such note.');
 		}
 
-		this.userNotePiningsRepository.delete({
-			userId: user.id,
-			noteId: note.id,
-		});
+		await this.userNotePiningsRepository.delete(pining.id);
 
 		// Deliver to remote followers
 		if (this.userEntityService.isLocalUser(user) && !note.localOnly && ['public', 'home'].includes(note.visibility)) {
