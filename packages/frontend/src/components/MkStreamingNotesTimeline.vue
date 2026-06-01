@@ -45,6 +45,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					</div>
 				</div>
 				<MkNote v-else :class="$style.note" :note="note" :withHardMute="true" :data-scroll-anchor="note.id"/>
+				<div v-if="showChannelRecommendationAfter(i)" :key="`channelRecommendation:${note.id}`" :class="$style.ad">
+					<MkChannelRecommendation/>
+				</div>
 			</template>
 		</component>
 		<button v-show="paginator.canFetchOlder.value" key="_more_" v-appear="prefer.s.enableInfiniteScroll ? paginator.fetchOlder : null" :disabled="paginator.fetchingOlder.value" class="_button" :class="$style.more" @click="paginator.fetchOlder">
@@ -73,6 +76,7 @@ import { prefer } from '@/preferences.js';
 import { store } from '@/store.js';
 import MkNote from '@/components/MkNote.vue';
 import MkButton from '@/components/MkButton.vue';
+import MkChannelRecommendation from '@/components/MkChannelRecommendation.vue';
 import { i18n } from '@/i18n.js';
 import { DI } from '@/di.js';
 import { globalEvents, useGlobalEvent } from '@/events.js';
@@ -91,6 +95,7 @@ const props = withDefaults(defineProps<{
 	withReplies?: boolean;
 	withSensitive?: boolean;
 	onlyFiles?: boolean;
+	showChannelRecommendation?: boolean;
 }>(), {
 	withRenotes: true,
 	withReplies: false,
@@ -98,6 +103,7 @@ const props = withDefaults(defineProps<{
 	onlyFiles: false,
 	sound: false,
 	customSound: null,
+	showChannelRecommendation: false,
 });
 
 provide('inTimeline', true);
@@ -241,6 +247,7 @@ watch(visibility, () => {
 });
 
 let adInsertionCounter = 0;
+const channelRecommendationInsertIndex = ref(Math.floor(Math.random() * 5) + 1);
 
 const MIN_POLLING_INTERVAL = 1000 * 10;
 const POLLING_INTERVAL =
@@ -280,6 +287,13 @@ useGlobalEvent('noteRemovedFromAntenna', (antennaId, noteId) => {
 function releaseQueue() {
 	paginator.releaseQueue();
 	scrollToTop(rootEl.value!);
+}
+
+function showChannelRecommendationAfter(index: number) {
+	if (!props.showChannelRecommendation) return false;
+	if (paginator.items.value.length === 0) return false;
+
+	return index === Math.min(channelRecommendationInsertIndex.value, paginator.items.value.length - 1);
 }
 
 function prepend(note: Misskey.entities.Note & MisskeyEntity) {
@@ -415,6 +429,7 @@ onUnmounted(() => {
 function reloadTimeline() {
 	return new Promise<void>((res) => {
 		adInsertionCounter = 0;
+		channelRecommendationInsertIndex.value = Math.floor(Math.random() * 5) + 1;
 
 		paginator.reload().then(() => {
 			res();

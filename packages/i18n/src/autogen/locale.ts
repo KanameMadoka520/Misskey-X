@@ -4969,7 +4969,7 @@ export interface Locale extends ILocale {
      */
     "repositoryUrl": string;
     /**
-     * ソースコードが公開されているリポジトリがある場合、そのURLを記入します。Misskeyを現状のまま（ソースコードにいかなる変更も加えずに）使用している場合は https://github.com/misskey-dev/misskey と記入します。
+     * ソースコードが公開されているリポジトリがある場合、そのURLを記入します。このコミュニティでは https://github.com/KanameMadoka520/Misskey-X を使用してください。
      */
     "repositoryUrlDescription": string;
     /**
@@ -8778,6 +8778,16 @@ export interface Locale extends ILocale {
          * チャンネル外へのリノートと引用リノートを許可する
          */
         "allowRenoteToExternal": string;
+    };
+    "_channelRecommendation": {
+        /**
+         * まだフォローしていないチャンネルをランダムにおすすめ
+         */
+        "label": string;
+        /**
+         * 7日間表示しない
+         */
+        "ignoreForSevenDays": string;
     };
     "_menuDisplay": {
         /**

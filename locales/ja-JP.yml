@@ -2299,6 +2299,9 @@ _channel:
   nameAndDescription: "名前と説明"
   nameOnly: "名前のみ"
   allowRenoteToExternal: "チャンネル外へのリノートと引用リノートを許可する"
+_channelRecommendation:
+  label: "まだフォローしていないチャンネルをランダムにおすすめ"
+  ignoreForSevenDays: "7日間表示しない"
 
 _menuDisplay:
   sideFull: "横"

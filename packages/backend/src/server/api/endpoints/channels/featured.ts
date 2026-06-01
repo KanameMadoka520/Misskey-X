@@ -27,7 +27,12 @@ export const meta = {
 
 export const paramDef = {
 	type: 'object',
-	properties: {},
+	properties: {
+		limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
+		random: { type: 'boolean', default: false },
+		excludeFollowing: { type: 'boolean', default: false },
+		excludeChannelIds: { type: 'array', items: { type: 'string', format: 'misskey:id' }, maxItems: 100, default: [] },
+	},
 	required: [],
 } as const;
 
@@ -40,12 +45,30 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 		private channelEntityService: ChannelEntityService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
+			const limit = ps.limit ?? 10;
+			const random = ps.random ?? false;
+			const excludeFollowing = ps.excludeFollowing ?? false;
+			const excludeChannelIds = ps.excludeChannelIds ?? [];
+
 			const query = this.channelsRepository.createQueryBuilder('channel')
 				.where('channel.lastNotedAt IS NOT NULL')
-				.andWhere('channel.isArchived = FALSE')
-				.orderBy('channel.lastNotedAt', 'DESC');
+				.andWhere('channel.isArchived = FALSE');
 
-			const channels = await query.limit(10).getMany();
+			if (excludeChannelIds.length > 0) {
+				query.andWhere('channel.id NOT IN (:...excludeChannelIds)', { excludeChannelIds });
+			}
+
+			if (me && excludeFollowing) {
+				query.andWhere('NOT EXISTS (SELECT 1 FROM channel_following cf WHERE cf."followeeId" = channel.id AND cf."followerId" = :meId)', { meId: me.id });
+			}
+
+			if (random) {
+				query.orderBy('RANDOM()');
+			} else {
+				query.orderBy('channel.lastNotedAt', 'DESC');
+			}
+
+			const channels = await query.limit(limit).getMany();
 
 			return await Promise.all(channels.map(x => this.channelEntityService.pack(x, me)));
 		});

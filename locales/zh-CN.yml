@@ -2252,6 +2252,9 @@ _channel:
   nameAndDescription: "名称与描述"
   nameOnly: "仅名称"
   allowRenoteToExternal: "允许转发到频道外和引用"
+_channelRecommendation:
+  label: "随机推荐一个你还没有关注的频道"
+  ignoreForSevenDays: "忽略七天"
 _menuDisplay:
   sideFull: "横向"
   sideIcon: "横向（图标）"
