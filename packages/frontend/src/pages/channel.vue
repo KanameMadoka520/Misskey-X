@@ -57,6 +57,35 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInfo warn>{{ i18n.ts.notesSearchNotAvailable }}</MkInfo>
 			</div>
 		</div>
+		<div v-else-if="channel && tab === 'users'" class="_gaps">
+			<MkFoldableSection :defaultOpen="true">
+				<template #header><i class="ti ti-user-star ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts._channel.owner }}</template>
+				<div v-if="channelUsers.owner" class="_gaps_s">
+					<MkUserCardMini :user="channelUsers.owner" :withChart="false"/>
+				</div>
+				<MkInfo v-else>{{ i18n.ts.noUsers }}</MkInfo>
+			</MkFoldableSection>
+
+			<MkFoldableSection :defaultOpen="true">
+				<template #header><i class="ti ti-users-group ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts._channel.collaborators }}</template>
+				<div v-if="channelUsers.collaborators.length > 0" class="_gaps_s">
+					<MkUserCardMini v-for="user in channelUsers.collaborators" :key="user.id" :user="user" :withChart="false"/>
+				</div>
+				<MkInfo v-else>{{ i18n.ts._channel.noCollaborators }}</MkInfo>
+			</MkFoldableSection>
+
+			<MkFoldableSection :defaultOpen="true">
+				<template #header><i class="ti ti-user-check ti-fw" style="margin-right: 0.5em;"></i>{{ i18n.ts._channel.followers }}</template>
+				<div v-if="channelUsers.followers.length > 0" class="_gaps_s">
+					<MkUserCardMini v-for="user in channelUsers.followers" :key="user.id" :user="user" :withChart="false"/>
+					<div v-if="!channelUsersFollowersComplete" class="_buttonsCenter">
+						<MkButton rounded :disabled="channelUsersLoading" @click="loadChannelUsers(false)">{{ i18n.ts.loadMore }}</MkButton>
+					</div>
+				</div>
+				<MkInfo v-else-if="channelUsersLoading"><MkLoading/></MkInfo>
+				<MkInfo v-else>{{ i18n.ts._channel.noFollowers }}</MkInfo>
+			</MkFoldableSection>
+		</div>
 	</div>
 	<template #footer>
 		<div v-if="canPostToChannel" :class="$style.footer">
@@ -93,15 +122,27 @@ import { prefer } from '@/preferences.js';
 import MkNote from '@/components/MkNote.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import MkFoldableSection from '@/components/MkFoldableSection.vue';
+import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import { isSupportShare } from '@/utility/navigator.js';
 import { copyToClipboard } from '@/utility/copy-to-clipboard.js';
 import { notesSearchAvailable } from '@/utility/check-permissions.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { useRouter } from '@/router.js';
 import { Paginator } from '@/utility/paginator.js';
-import { isAdminOnlyChannel } from '@/custom-channels.js';
 
 const router = useRouter();
+
+type ChannelPostingPermission = 'everyone' | 'ownerAndCollaborators' | 'ownerOnly';
+type ChannelWithPermissions = Misskey.entities.Channel & {
+	postingPermission?: ChannelPostingPermission;
+	collaboratorUserIds?: string[];
+	isCollaborator?: boolean;
+};
+type ChannelUsersResponse = {
+	owner: Misskey.entities.User | null;
+	collaborators: Misskey.entities.User[];
+	followers: Misskey.entities.User[];
+};
 
 const props = defineProps<{
 	channelId: string;
@@ -109,12 +150,29 @@ const props = defineProps<{
 
 const tab = ref('overview');
 
-const channel = ref<Misskey.entities.Channel | null>(null);
+const channel = ref<ChannelWithPermissions | null>(null);
 const favorited = ref(false);
 const searchQuery = ref('');
 const searchPaginator = shallowRef();
 const searchKey = ref('');
-const canPostToChannel = computed(() => $i != null && (!isAdminOnlyChannel(props.channelId) || $i.isAdmin === true));
+const channelUsers = ref<ChannelUsersResponse>({
+	owner: null,
+	collaborators: [],
+	followers: [],
+});
+const channelUsersLoading = ref(false);
+const channelUsersFollowersOffset = ref(0);
+const channelUsersFollowersComplete = ref(false);
+const canPostToChannel = computed(() => {
+	if ($i == null || channel.value == null) return false;
+	if ($i.isAdmin === true) return true;
+	const postingPermission = channel.value.postingPermission ?? 'everyone';
+	if (postingPermission === 'everyone') return true;
+	if (channel.value.userId === $i.id) return true;
+	if (postingPermission === 'ownerAndCollaborators' && channel.value.collaboratorUserIds?.includes($i.id)) return true;
+	if (postingPermission === 'ownerAndCollaborators' && channel.value.isCollaborator === true) return true;
+	return false;
+});
 const featuredPaginator = markRaw(new Paginator('notes/featured', {
 	limit: 10,
 	computedParams: computed(() => ({
@@ -151,6 +209,12 @@ watch(() => props.channelId, async () => {
 
 	channel.value = _channel;
 }, { immediate: true });
+
+watch([tab, () => props.channelId], () => {
+	if (tab.value === 'users') {
+		loadChannelUsers(true);
+	}
+});
 
 function edit() {
 	router.push('/channels/:channelId/edit', {
@@ -258,6 +322,36 @@ async function search() {
 	searchKey.value = query;
 }
 
+async function loadChannelUsers(reset = true) {
+	if (channelUsersLoading.value) return;
+
+	channelUsersLoading.value = true;
+
+	try {
+		const result = await misskeyApi<ChannelUsersResponse>('channels/users' as any, {
+			channelId: props.channelId,
+			limit: 30,
+			offset: reset ? 0 : channelUsersFollowersOffset.value,
+		} as any);
+
+		if (reset) {
+			channelUsers.value = result;
+			channelUsersFollowersOffset.value = result.followers.length;
+		} else {
+			channelUsers.value = {
+				owner: result.owner,
+				collaborators: result.collaborators,
+				followers: [...channelUsers.value.followers, ...result.followers],
+			};
+			channelUsersFollowersOffset.value += result.followers.length;
+		}
+
+		channelUsersFollowersComplete.value = result.followers.length < 30;
+	} finally {
+		channelUsersLoading.value = false;
+	}
+}
+
 const headerActions = computed(() => {
 	if (channel.value) {
 		const headerItems: PageHeaderItem[] = [];
@@ -341,6 +435,10 @@ const headerTabs = computed(() => [{
 	key: 'search',
 	title: i18n.ts.search,
 	icon: 'ti ti-search',
+}, {
+	key: 'users',
+	title: i18n.ts.users,
+	icon: 'ti ti-users',
 }]);
 
 definePage(() => ({

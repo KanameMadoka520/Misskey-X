@@ -13,7 +13,7 @@ import { extractCustomEmojisFromMfm } from '@/misc/extract-custom-emojis-from-mf
 import { extractHashtags } from '@/misc/extract-hashtags.js';
 import type { IMentionedRemoteUsers } from '@/models/Note.js';
 import { MiNote } from '@/models/Note.js';
-import type { BlockingsRepository, ChannelFollowingsRepository, ChannelsRepository, DriveFilesRepository, FollowingsRepository, InstancesRepository, MiFollowing, MiMeta, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
+import type { BlockingsRepository, ChannelCollaboratorsRepository, ChannelFollowingsRepository, ChannelsRepository, DriveFilesRepository, FollowingsRepository, InstancesRepository, MiFollowing, MiMeta, MutingsRepository, NotesRepository, NoteThreadMutingsRepository, UserListMembershipsRepository, UserProfilesRepository, UsersRepository } from '@/models/_.js';
 import type { MiDriveFile } from '@/models/DriveFile.js';
 import type { MiApp } from '@/models/App.js';
 import { concat } from '@/misc/prelude/array.js';
@@ -54,7 +54,7 @@ import { UserBlockingService } from '@/core/UserBlockingService.js';
 import { isReply } from '@/misc/is-reply.js';
 import { trackPromise } from '@/misc/promise-tracker.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { ADMIN_ONLY_CHANNEL_POST_PERMISSION_ERROR_ID, isAdminOnlyChannel } from '@/misc/admin-only-channels.js';
+import { CHANNEL_POST_PERMISSION_ERROR_ID } from '@/misc/channel-permissions.js';
 import { CollapsedQueue } from '@/misc/collapsed-queue.js';
 import { CacheService } from '@/core/CacheService.js';
 import { isQuote, isRenote } from '@/misc/is-renote.js';
@@ -238,6 +238,9 @@ export class NoteCreateService implements OnApplicationShutdown {
 		@Inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
 
+		@Inject(DI.channelCollaboratorsRepository)
+		private channelCollaboratorsRepository: ChannelCollaboratorsRepository,
+
 		@Inject(DI.blockingsRepository)
 		private blockingsRepository: BlockingsRepository,
 
@@ -418,9 +421,6 @@ export class NoteCreateService implements OnApplicationShutdown {
 				throw new IdentifiableError('bfa3905b-25f5-4894-b430-da331a490e4b', 'No such channel');
 			}
 
-			if (isAdminOnlyChannel(channel.id) && !(await this.roleService.isAdministrator(user))) {
-				throw new IdentifiableError(ADMIN_ONLY_CHANNEL_POST_PERMISSION_ERROR_ID, 'Only administrators can post to this channel');
-			}
 		}
 
 		return this.create(user, {
@@ -472,6 +472,10 @@ export class NoteCreateService implements OnApplicationShutdown {
 		if (data.channel != null) data.visibility = 'public';
 		if (data.channel != null) data.visibleUsers = [];
 		if (data.channel != null) data.localOnly = true;
+
+		if (data.channel != null) {
+			await this.assertCanPostToChannel(user, data.channel);
+		}
 
 		if (data.visibility === 'public' && data.channel == null) {
 			const sensitiveWords = this.meta.sensitiveWords;
@@ -1025,6 +1029,26 @@ export class NoteCreateService implements OnApplicationShutdown {
 			})
 			.where('id = :id', { id: user.id })
 			.execute();
+	}
+
+	@bindThis
+	private async assertCanPostToChannel(user: { id: MiUser['id']; }, channel: MiChannel): Promise<void> {
+		if (await this.roleService.isAdministrator(user)) return;
+		if (channel.postingPermission === 'everyone') return;
+		if (channel.userId === user.id) return;
+
+		if (channel.postingPermission === 'ownerAndCollaborators') {
+			const isCollaborator = await this.channelCollaboratorsRepository.exists({
+				where: {
+					channelId: channel.id,
+					userId: user.id,
+				},
+			});
+
+			if (isCollaborator) return;
+		}
+
+		throw new IdentifiableError(CHANNEL_POST_PERMISSION_ERROR_ID, 'You do not have permission to post to this channel');
 	}
 
 	@bindThis

@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { In } from 'typeorm';
 import { DI } from '@/di-symbols.js';
 import type {
+	ChannelCollaboratorsRepository,
 	ChannelFavoritesRepository,
 	ChannelFollowingsRepository, ChannelMutingRepository,
 	ChannelsRepository,
@@ -30,6 +31,8 @@ export class ChannelEntityService {
 		private channelsRepository: ChannelsRepository,
 		@Inject(DI.channelFollowingsRepository)
 		private channelFollowingsRepository: ChannelFollowingsRepository,
+		@Inject(DI.channelCollaboratorsRepository)
+		private channelCollaboratorsRepository: ChannelCollaboratorsRepository,
 		@Inject(DI.channelFavoritesRepository)
 		private channelFavoritesRepository: ChannelFavoritesRepository,
 		@Inject(DI.channelMutingRepository)
@@ -68,6 +71,7 @@ export class ChannelEntityService {
 		let isFollowing = false;
 		let isFavorited = false;
 		let isMuting = false;
+		let isCollaborator = false;
 		if (me) {
 			isFollowing = opts?.followings?.has(channel.id) ?? await this.channelFollowingsRepository.exists({
 				where: {
@@ -89,7 +93,26 @@ export class ChannelEntityService {
 					channelId: channel.id,
 				},
 			});
+
+			isCollaborator = await this.channelCollaboratorsRepository.exists({
+				where: {
+					userId: me.id,
+					channelId: channel.id,
+				},
+			});
 		}
+
+		const collaboratorUserIds = detailed ? await this.channelCollaboratorsRepository.find({
+			where: {
+				channelId: channel.id,
+			},
+			select: {
+				userId: true,
+			},
+			order: {
+				id: 'ASC',
+			},
+		}).then(it => it.map(x => x.userId)) : undefined;
 
 		const pinnedNotes = Array.of<MiNote>();
 		if (channel.pinnedNoteIds.length > 0) {
@@ -119,16 +142,19 @@ export class ChannelEntityService {
 			notesCount: channel.notesCount,
 			isSensitive: channel.isSensitive,
 			allowRenoteToExternal: channel.allowRenoteToExternal,
+			postingPermission: channel.postingPermission,
 
 			...(me ? {
 				isFollowing,
 				isFavorited,
 				isMuting,
+				isCollaborator,
 				hasUnreadNote: false, // 後方互換性のため
 			} : {}),
 
 			...(detailed ? {
 				pinnedNotes: (await this.noteEntityService.packMany(pinnedNotes, me)).sort((a, b) => channel.pinnedNoteIds.indexOf(a.id) - channel.pinnedNoteIds.indexOf(b.id)),
+				collaboratorUserIds,
 			} : {}),
 		};
 	}
@@ -200,4 +226,3 @@ export class ChannelEntityService {
 		})));
 	}
 }
-

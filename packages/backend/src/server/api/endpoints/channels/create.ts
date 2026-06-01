@@ -11,6 +11,7 @@ import type { MiChannel } from '@/models/Channel.js';
 import { IdService } from '@/core/IdService.js';
 import { ChannelEntityService } from '@/core/entities/ChannelEntityService.js';
 import { DI } from '@/di-symbols.js';
+import { CHANNEL_POSTING_PERMISSIONS } from '@/misc/channel-permissions.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -53,6 +54,7 @@ export const paramDef = {
 		color: { type: 'string', minLength: 1, maxLength: 16 },
 		isSensitive: { type: 'boolean', nullable: true },
 		allowRenoteToExternal: { type: 'boolean', nullable: true },
+		postingPermission: { type: 'string', enum: CHANNEL_POSTING_PERMISSIONS, default: 'everyone' },
 	},
 	required: ['name'],
 } as const;
@@ -91,6 +93,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				isSensitive: ps.isSensitive ?? false,
 				...(ps.color !== undefined ? { color: ps.color } : {}),
 				allowRenoteToExternal: ps.allowRenoteToExternal ?? true,
+				postingPermission: ps.postingPermission ?? 'everyone',
 			} as MiChannel);
 
 			return await this.channelEntityService.pack(channel, me);

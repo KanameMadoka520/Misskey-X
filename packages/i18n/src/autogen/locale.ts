@@ -8786,6 +8786,70 @@ export interface Locale extends ILocale {
          * チャンネル外へのリノートと引用リノートを許可する
          */
         "allowRenoteToExternal": string;
+        /**
+         * ユーザー
+         */
+        "users": string;
+        /**
+         * チャンネル管理者
+         */
+        "owner": string;
+        /**
+         * チャンネル管理者はチャンネルを編集し、共同編集者を管理できます。
+         */
+        "ownerDescription": string;
+        /**
+         * チャンネル管理者を変更
+         */
+        "changeOwner": string;
+        /**
+         * 共同編集者
+         */
+        "collaborators": string;
+        /**
+         * 共同編集者は制限付きチャンネルへ投稿できるかどうかの判定にのみ使われ、その他の管理権限は持ちません。
+         */
+        "collaboratorsDescription": string;
+        /**
+         * 共同編集者を追加
+         */
+        "addCollaborator": string;
+        /**
+         * 共同編集者はいません
+         */
+        "noCollaborators": string;
+        /**
+         * フォロー中のユーザー
+         */
+        "followers": string;
+        /**
+         * フォロー中のユーザーはいません
+         */
+        "noFollowers": string;
+        /**
+         * メンバーと投稿権限
+         */
+        "memberPermissions": string;
+        /**
+         * チャンネル投稿権限
+         */
+        "postingPermission": string;
+        /**
+         * インスタンス管理者はチャンネル投稿権限の制限を受けません。
+         */
+        "postingPermissionDescription": string;
+        /**
+         * 誰でも投稿可能
+         */
+        "postingPermissionEveryone": string;
+        /**
+         * チャンネル管理者と共同編集者が投稿可能
+         */
+        "postingPermissionOwnerAndCollaborators": string;
+        /**
+         * チャンネル管理者のみ投稿可能
+         */
+        "postingPermissionOwnerOnly": string;
     };
     "_channelRecommendation": {
         /**

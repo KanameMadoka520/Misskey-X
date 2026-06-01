@@ -27,6 +27,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<template #label>{{ i18n.ts._channel.allowRenoteToExternal }}</template>
 			</MkSwitch>
 
+			<MkSelect v-model="postingPermission" :items="postingPermissionDef">
+				<template #label>{{ i18n.ts._channel.postingPermission }}</template>
+				<template #caption>{{ i18n.ts._channel.postingPermissionDescription }}</template>
+			</MkSelect>
+
 			<div>
 				<MkButton v-if="bannerId == null" @click="setBannerImage"><i class="ti ti-plus"></i> {{ i18n.ts._channel.setBanner }}</MkButton>
 				<div v-else-if="bannerUrl">
@@ -58,6 +63,42 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</div>
 			</MkFolder>
 
+			<MkFolder v-if="channelId" :defaultOpen="true">
+				<template #label>{{ i18n.ts._channel.memberPermissions }}</template>
+
+				<div class="_gaps">
+					<div class="_gaps_s">
+						<div :class="$style.sectionHeader">
+							<div>
+								<div :class="$style.sectionTitle">{{ i18n.ts._channel.owner }}</div>
+								<div :class="$style.sectionCaption">{{ i18n.ts._channel.ownerDescription }}</div>
+							</div>
+							<MkButton v-if="$i?.isAdmin" small rounded @click="selectOwner()"><i class="ti ti-user-star"></i> {{ i18n.ts._channel.changeOwner }}</MkButton>
+						</div>
+						<MkUserCardMini v-if="ownerUser" :user="ownerUser" :withChart="false"/>
+						<MkInfo v-else>{{ i18n.ts.noUsers }}</MkInfo>
+					</div>
+
+					<div class="_gaps_s">
+						<div :class="$style.sectionHeader">
+							<div>
+								<div :class="$style.sectionTitle">{{ i18n.ts._channel.collaborators }}</div>
+								<div :class="$style.sectionCaption">{{ i18n.ts._channel.collaboratorsDescription }}</div>
+							</div>
+							<MkButton small rounded @click="addCollaborator()"><i class="ti ti-user-plus"></i> {{ i18n.ts._channel.addCollaborator }}</MkButton>
+						</div>
+
+						<div v-if="collaboratorUsers.length > 0" class="_gaps_s">
+							<div v-for="user in collaboratorUsers" :key="user.id" :class="$style.memberRow">
+								<MkUserCardMini :user="user" :withChart="false" :class="$style.memberCard"/>
+								<MkButton danger rounded iconOnly @click="removeCollaborator(user.id)"><i class="ti ti-x"></i></MkButton>
+							</div>
+						</div>
+						<MkInfo v-else>{{ i18n.ts._channel.noCollaborators }}</MkInfo>
+					</div>
+				</div>
+			</MkFolder>
+
 			<div class="_buttons">
 				<MkButton primary @click="save()"><i class="ti ti-device-floppy"></i> {{ channelId ? i18n.ts.save : i18n.ts.create }}</MkButton>
 				<MkButton v-if="channelId" danger @click="archive()"><i class="ti ti-trash"></i> {{ i18n.ts.archive }}</MkButton>
@@ -82,15 +123,30 @@ import MkFolder from '@/components/MkFolder.vue';
 import MkSwitch from '@/components/MkSwitch.vue';
 import MkTextarea from '@/components/MkTextarea.vue';
 import MkDraggable from '@/components/MkDraggable.vue';
+import MkSelect from '@/components/MkSelect.vue';
+import MkUserCardMini from '@/components/MkUserCardMini.vue';
+import MkInfo from '@/components/MkInfo.vue';
 import { useRouter } from '@/router.js';
+import { $i } from '@/i.js';
 
 const router = useRouter();
+
+type ChannelPostingPermission = 'everyone' | 'ownerAndCollaborators' | 'ownerOnly';
+type ChannelWithPermissions = Misskey.entities.Channel & {
+	postingPermission?: ChannelPostingPermission;
+	collaboratorUserIds?: string[];
+};
+type ChannelUsersResponse = {
+	owner: Misskey.entities.User | null;
+	collaborators: Misskey.entities.User[];
+	followers: Misskey.entities.User[];
+};
 
 const props = defineProps<{
 	channelId?: string;
 }>();
 
-const channel = ref<Misskey.entities.Channel | null>(null);
+const channel = ref<ChannelWithPermissions | null>(null);
 const name = ref<string>('');
 const description = ref<string | null>(null);
 const bannerUrl = ref<string | null>(null);
@@ -98,7 +154,15 @@ const bannerId = ref<string | null>(null);
 const color = ref('#000');
 const isSensitive = ref(false);
 const allowRenoteToExternal = ref(true);
+const postingPermission = ref<ChannelPostingPermission>('everyone');
 const pinnedNoteIds = ref<Misskey.entities.Note['id'][]>([]);
+const ownerUser = ref<Misskey.entities.User | null>(null);
+const collaboratorUsers = ref<Misskey.entities.User[]>([]);
+const postingPermissionDef = [
+	{ label: i18n.ts._channel.postingPermissionEveryone, value: 'everyone' },
+	{ label: i18n.ts._channel.postingPermissionOwnerAndCollaborators, value: 'ownerAndCollaborators' },
+	{ label: i18n.ts._channel.postingPermissionOwnerOnly, value: 'ownerOnly' },
+];
 
 watch(() => bannerId.value, async () => {
 	if (bannerId.value == null) {
@@ -125,8 +189,10 @@ async function fetchChannel() {
 	pinnedNoteIds.value = result.pinnedNoteIds;
 	color.value = result.color;
 	allowRenoteToExternal.value = result.allowRenoteToExternal;
+	postingPermission.value = (result as ChannelWithPermissions).postingPermission ?? 'everyone';
 
-	channel.value = result;
+	channel.value = result as ChannelWithPermissions;
+	await fetchChannelUsers();
 }
 
 fetchChannel();
@@ -147,7 +213,37 @@ function removePinnedNote(id: string) {
 	pinnedNoteIds.value = pinnedNoteIds.value.filter(x => x !== id);
 }
 
-function save() {
+async function fetchChannelUsers() {
+	if (props.channelId == null) return;
+
+	const result = await misskeyApi<ChannelUsersResponse>('channels/users' as any, {
+		channelId: props.channelId,
+		limit: 1,
+		offset: 0,
+	} as any);
+
+	ownerUser.value = result.owner;
+	collaboratorUsers.value = result.collaborators;
+}
+
+async function selectOwner() {
+	const user = await os.selectUser({ includeSelf: true, localOnly: true });
+	ownerUser.value = user;
+	collaboratorUsers.value = collaboratorUsers.value.filter(x => x.id !== user.id);
+}
+
+async function addCollaborator() {
+	const user = await os.selectUser({ includeSelf: true, localOnly: true });
+	if (ownerUser.value?.id === user.id) return;
+	if (collaboratorUsers.value.some(x => x.id === user.id)) return;
+	collaboratorUsers.value = [...collaboratorUsers.value, user];
+}
+
+function removeCollaborator(userId: string) {
+	collaboratorUsers.value = collaboratorUsers.value.filter(x => x.id !== userId);
+}
+
+async function save() {
 	const params = {
 		name: name.value,
 		description: description.value,
@@ -155,16 +251,20 @@ function save() {
 		color: color.value,
 		isSensitive: isSensitive.value,
 		allowRenoteToExternal: allowRenoteToExternal.value,
-	} satisfies Misskey.entities.ChannelsCreateRequest;
+		postingPermission: postingPermission.value,
+	};
 
 	if (props.channelId != null) {
-		os.apiWithDialog('channels/update', {
+		await os.apiWithDialog('channels/update', {
 			...params,
 			channelId: props.channelId,
 			pinnedNoteIds: pinnedNoteIds.value,
-		});
+			...($i?.isAdmin && ownerUser.value ? { userId: ownerUser.value.id } : {}),
+			collaboratorUserIds: collaboratorUsers.value.map(user => user.id),
+		} as any);
+		await fetchChannel();
 	} else {
-		os.apiWithDialog('channels/create', params).then(created => {
+		os.apiWithDialog('channels/create', params as any).then(created => {
 			router.push('/channels/:channelId', {
 				params: {
 					channelId: created.id,
@@ -242,5 +342,33 @@ definePage(() => ({
 	height: 32px;
 	margin: 0 8px;
 	opacity: 0.5;
+}
+
+.sectionHeader {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.sectionTitle {
+	font-weight: 700;
+}
+
+.sectionCaption {
+	margin-top: 2px;
+	font-size: 0.85em;
+	opacity: 0.7;
+}
+
+.memberRow {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.memberCard {
+	flex: 1;
+	min-width: 0;
 }
 </style>

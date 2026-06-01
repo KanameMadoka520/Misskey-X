@@ -148,6 +148,7 @@ export * as 'channels/timeline' from './endpoints/channels/timeline.js';
 export * as 'channels/unfavorite' from './endpoints/channels/unfavorite.js';
 export * as 'channels/unfollow' from './endpoints/channels/unfollow.js';
 export * as 'channels/update' from './endpoints/channels/update.js';
+export * as 'channels/users' from './endpoints/channels/users.js';
 export * as 'channels/mute/create' from './endpoints/channels/mute/create.js';
 export * as 'channels/mute/delete' from './endpoints/channels/mute/delete.js';
 export * as 'channels/mute/list' from './endpoints/channels/mute/list.js';

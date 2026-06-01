@@ -7,6 +7,7 @@ import { PrimaryColumn, Entity, Index, JoinColumn, Column, ManyToOne } from 'typ
 import { id } from './util/id.js';
 import { MiUser } from './User.js';
 import { MiDriveFile } from './DriveFile.js';
+import type { ChannelPostingPermission } from '@/misc/channel-permissions.js';
 
 @Entity('channel')
 export class MiChannel {
@@ -98,4 +99,10 @@ export class MiChannel {
 		default: true,
 	})
 	public allowRenoteToExternal: boolean;
+
+	@Column('varchar', {
+		length: 32,
+		default: 'everyone',
+	})
+	public postingPermission: ChannelPostingPermission;
 }

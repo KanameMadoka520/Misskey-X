@@ -11,7 +11,7 @@ import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
-import { ADMIN_ONLY_CHANNEL_POST_PERMISSION_ERROR_ID } from '@/misc/admin-only-channels.js';
+import { CHANNEL_POST_PERMISSION_ERROR_ID } from '@/misc/channel-permissions.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -113,9 +113,9 @@ export const meta = {
 			id: '33510210-8452-094c-6227-4a6c05d99f00',
 		},
 
-		cannotPostToAdminOnlyChannel: {
-			message: 'Only administrators can post to this channel.',
-			code: 'CANNOT_POST_TO_ADMIN_ONLY_CHANNEL',
+		cannotPostToRestrictedChannel: {
+			message: 'You do not have permission to post to this channel.',
+			code: 'CANNOT_POST_TO_RESTRICTED_CHANNEL',
 			id: '8597e8a9-39db-45d9-bd84-2a1bd5b77199',
 		},
 
@@ -290,8 +290,8 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 						throw new ApiError(meta.errors.cannotCreateAlreadyExpiredPoll);
 					} else if (err.id === 'bfa3905b-25f5-4894-b430-da331a490e4b') {
 						throw new ApiError(meta.errors.noSuchChannel);
-					} else if (err.id === ADMIN_ONLY_CHANNEL_POST_PERMISSION_ERROR_ID) {
-						throw new ApiError(meta.errors.cannotPostToAdminOnlyChannel);
+					} else if (err.id === CHANNEL_POST_PERMISSION_ERROR_ID) {
+						throw new ApiError(meta.errors.cannotPostToRestrictedChannel);
 					}
 				}
 				throw err;

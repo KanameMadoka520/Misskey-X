@@ -19,6 +19,7 @@ import {
 	MiBlocking,
 	MiBubbleGameRecord,
 	MiChannel,
+	MiChannelCollaborator,
 	MiChannelFavorite,
 	MiChannelFollowing,
 	MiChannelMuting,
@@ -418,6 +419,12 @@ const $channelsRepository: Provider = {
 	inject: [DI.db],
 };
 
+const $channelCollaboratorsRepository: Provider = {
+	provide: DI.channelCollaboratorsRepository,
+	useFactory: (db: DataSource) => db.getRepository(MiChannelCollaborator).extend(miRepository as MiRepository<MiChannelCollaborator>),
+	inject: [DI.db],
+};
+
 const $channelFollowingsRepository: Provider = {
 	provide: DI.channelFollowingsRepository,
 	useFactory: (db: DataSource) => db.getRepository(MiChannelFollowing).extend(miRepository as MiRepository<MiChannelFollowing>),
@@ -602,6 +609,7 @@ const $reversiGamesRepository: Provider = {
 		$promoReadsRepository,
 		$relaysRepository,
 		$channelsRepository,
+		$channelCollaboratorsRepository,
 		$channelFollowingsRepository,
 		$channelFavoritesRepository,
 		$channelMutingRepository,
@@ -680,6 +688,7 @@ const $reversiGamesRepository: Provider = {
 		$promoReadsRepository,
 		$relaysRepository,
 		$channelsRepository,
+		$channelCollaboratorsRepository,
 		$channelFollowingsRepository,
 		$channelFavoritesRepository,
 		$channelMutingRepository,

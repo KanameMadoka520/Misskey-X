@@ -77,6 +77,11 @@ export const packedChannelSchema = {
 			type: 'boolean',
 			optional: false, nullable: false,
 		},
+		postingPermission: {
+			type: 'string',
+			optional: false, nullable: false,
+			enum: ['everyone', 'ownerAndCollaborators', 'ownerOnly'],
+		},
 		isFollowing: {
 			type: 'boolean',
 			optional: true, nullable: false,
@@ -88,6 +93,18 @@ export const packedChannelSchema = {
 		isMuting: {
 			type: 'boolean',
 			optional: true, nullable: false,
+		},
+		isCollaborator: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
+		collaboratorUserIds: {
+			type: 'array',
+			optional: true, nullable: false,
+			items: {
+				type: 'string',
+				format: 'id',
+			},
 		},
 		pinnedNotes: {
 			type: 'array',
