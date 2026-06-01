@@ -1,63 +1,85 @@
-<div align="center">
-<a href="https://misskey-hub.net">
-	<img src="./assets/title_float.svg" alt="Misskey logo" style="border-radius:50%" width="300"/>
-</a>
+# Misskey-X
 
-**🌎 **Misskey** is an open source, federated social media platform that's free forever! 🚀**
+Misskey-X 是 x.tcymc.space 使用的 Misskey 二次开发版本。
 
-[Learn more](https://misskey-hub.net/)
+本仓库以 [Misskey](https://github.com/misskey-dev/misskey) 官方代码为基础，面向 tcymc.space / 糖醋鱼服务器社区做了本地化、社区运营、邮件管理、帖子交互和频道引导等定制。除特别说明外，本项目仍遵循上游 Misskey 的 AGPL-3.0-only 许可证。
 
----
+线上实例：
 
-<a href="https://misskey-hub.net/servers/">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/find_an-instance-acea31?logoColor=acea31&style=for-the-badge&logo=misskey&labelColor=363B40" alt="find an instance"/></a>
+- x.tcymc.space: https://x.tcymc.space
+- 社区更新日志: https://x.tcymc.space/community-changelog
+- 糖醋鱼服务器更新信息: https://x.tcymc.space/tangcuyu-server-updates
 
-<a href="https://misskey-hub.net/docs/for-admin/install/guides/">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/create_an-instance-FBD53C?logoColor=FBD53C&style=for-the-badge&logo=server&labelColor=363B40" alt="create an instance"/></a>
+## 与 Misskey 原版的主要差异
 
-<a href="./CONTRIBUTING.md">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/become_a-contributor-A371F7?logoColor=A371F7&style=for-the-badge&logo=git-merge&labelColor=363B40" alt="become a contributor"/></a>
+### 社区专用信息区
 
-<a href="https://discord.gg/Wp8gVStHW3">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/join_the-community-5865F2?logoColor=5865F2&style=for-the-badge&logo=discord&labelColor=363B40" alt="join the community"/></a>
+- 新增“社区更新日志”导航入口，位置在“时间线”和“通知”之间。
+- 新增“糖醋鱼服务器更新信息”导航入口，用于集中发布糖醋鱼服务器相关更新。
+- 两个入口都复用 Misskey 频道帖文时间线能力，用户看到的内容样式与普通帖子一致。
+- 两个专用频道均限制为仅管理员可以发帖，普通用户可以阅读但不能发布。
+- 后端对专用频道发帖做了硬校验，即使绕过前端直接调用 API，普通用户也会被拒绝。
+- 管理员专用频道发帖失败会返回明确的 `CANNOT_POST_TO_ADMIN_ONLY_CHANNEL` 错误码。
 
-<a href="https://www.patreon.com/syuilo">
-		<img src="https://custom-icon-badges.herokuapp.com/badge/become_a-patron-F96854?logoColor=F96854&style=for-the-badge&logo=patreon&labelColor=363B40" alt="become a patron"/></a>
+### 帖子阅读与详情交互
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/misskey-dev/misskey)
+- 调高了帖子自动折叠阈值，长文字和多图帖子不再过早只显示很短一段。
+- 保留点击时间戳进入帖子详情的原有方式。
+- 在帖子底部操作区新增“详情”入口，减少从菜单里找详情的步骤。
+- 点击帖子正文可以直接进入详情页；点击图片仍然优先打开图片查看。
+- 帖子详情页的回复默认展开，减少查看讨论时的额外点击。
 
-<a href="https://flatt.tech/oss/gmo/trampoline" target="_blank"><img src="https://flatt.tech/assets/images/badges/gmo-oss.svg" height="24px"/></a>
+### 频道发现与关注引导
 
-</div>
+- 时间线中加入随机频道推荐插片。
+- 推荐来源是用户尚未关注的频道，帮助新用户发现社区内不同频道。
+- 推荐条提供“关注”和“忽略七天”操作。
+- “忽略七天”只针对当前被推荐频道，不会关闭整个推荐逻辑。
 
-## Thanks
+### 邮件发送与审计
 
-<a href="https://sentry.io/"><img src="https://github.com/misskey-dev/misskey/assets/4439005/98576556-222f-467a-94be-e98dbda1d852" height="30" alt="Sentry" /></a>
+- 邮件发送改为适配本站的 SMTP 中继方案，避免直接暴露源站 SMTP 细节。
+- 用户邮件设置页显示 Spacemail Pro 每小时 500 封滚动额度的使用进度。
+- 管理后台邮件设置页新增邮件发送记录审计能力。
+- 审计记录包含请求来源、IP、用户、邮件类型和大致内容摘要。
+- 审计页面支持分类、数量筛选、分级筛选、搜索和清理记录。
+- 邮件额度按滚动时间窗统计，而不是按整点刷新。
 
-Thanks to [Sentry](https://sentry.io/) for providing the error tracking platform that helps us catch unexpected errors.
+### 多语言邮件文本
 
-<a href="https://www.chromatic.com/"><img src="https://user-images.githubusercontent.com/321738/84662277-e3db4f80-af1b-11ea-88f5-91d67a5e59f6.png" height="30" alt="Chromatic" /></a>
+- 站内预设业务邮件统一调整为中文、英文、日语三语同时存在。
+- 三语顺序固定为：中文 / English / 日本語。
+- 覆盖验证、通知、系统类邮件，避免出现只有英文或只有英文加日文的情况。
 
-Thanks to [Chromatic](https://www.chromatic.com/) for providing the visual testing platform that helps us review UI changes and catch visual regressions.
+### 社区文案与用户提示
 
-<a href="https://about.codecov.io/for/open-source/"><img src="https://about.codecov.io/wp-content/themes/codecov/assets/brand/sentry-cobranding/logos/codecov-by-sentry-logo.svg" height="30" alt="Codecov" /></a>
+- 替换 Misskey 默认“您喜欢 Misskey 吗？”捐助弹窗文案，改为 x.tcymc.space 社区说明。
+- 文案引导用户在社区发布 Minecraft 相关内容，也欢迎其他兴趣内容。
+- 在部分 Misskey 官方尚未完成的通知开关处增加站长提示，说明当前开关无效，后续可能二次开发实现。
 
-Thanks to [Codecov](https://about.codecov.io/for/open-source/) for providing the code coverage platform that helps us improve our test coverage.
+### 仓库与展示链接
 
-<a href="https://crowdin.com/"><img src="https://user-images.githubusercontent.com/20679825/230709597-1299a011-171a-4294-a91e-355a9b37c672.svg" height="30" alt="Crowdin" /></a>
+- 站内展示源码仓库的位置改为 Misskey-X 仓库地址。
+- 该调整只影响展示给用户看的链接，不改变上游代码来源和运行逻辑。
+- 本仓库用于持续保存 x.tcymc.space 的二次开发改动，后续同步上游时应优先保留本站自定义功能。
 
-Thanks to [Crowdin](https://crowdin.com/) for providing the localization platform that helps us translate Misskey into many languages.
+### 构建与部署适配
 
-<a href="https://hub.docker.com/"><img src="https://user-images.githubusercontent.com/20679825/230148221-f8e73a32-a49b-47c3-9029-9a15c3824f92.png" height="30" alt="Docker" /></a>
+- Docker 构建流程已按本机环境做过适配。
+- 构建镜像时使用国内镜像源以提高服务器上的构建成功率和速度。
+- 本站当前通过 `/opt/misskey-tcy/compose.yml` 管理容器，web 服务由本仓库源码构建。
 
-Thanks to [Docker](https://hub.docker.com/) for providing the container platform that helps us run Misskey in production.
+## 维护原则
 
----
+- 上游 Misskey 更新可以继续同步，但合并时应优先保留本仓库中的社区定制功能。
+- 数据库、用户数据、上传文件和运行配置不属于本仓库源码提交内容，部署前后都必须单独保护。
+- 新增社区功能时，应尽量复用 Misskey 已有的帖子、频道、时间线、权限和 i18n 体系，减少难维护的独立系统。
+- 涉及普通用户可见行为的改动，应同步更新 README 或社区更新日志，方便用户理解变化。
 
-<div align="center">
-	
-Support us with a ⭐ !
+## 上游项目
 
-[![Star History Chart](https://api.star-history.com/svg?repos=misskey-dev/misskey&type=Date)](https://star-history.com/#misskey-dev/misskey&Date)
+Misskey 是一个开源、去中心化的微博客平台。
 
-</div>
+- 上游仓库: https://github.com/misskey-dev/misskey
+- 官方文档: https://misskey-hub.net
+- 许可证: AGPL-3.0-only

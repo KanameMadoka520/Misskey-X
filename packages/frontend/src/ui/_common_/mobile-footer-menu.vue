@@ -23,6 +23,12 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</div>
 	</button>
 
+	<button :class="$style.item" class="_button" @click="mainRouter.push(TANGCUYU_SERVER_UPDATES_PATH)">
+		<div :class="$style.itemInner">
+			<i :class="$style.itemIcon" class="ti ti-fish"></i>
+		</div>
+	</button>
+
 	<button :class="$style.item" class="_button" @click="mainRouter.push('/my/notifications')">
 		<div :class="$style.itemInner">
 			<i :class="$style.itemIcon" class="ti ti-bell"></i>
@@ -52,7 +58,7 @@ import { $i } from '@/i.js';
 import * as os from '@/os.js';
 import { mainRouter } from '@/router.js';
 import { navbarItemDef } from '@/navbar.js';
-import { COMMUNITY_CHANGELOG_PATH } from '@/community-changelog.js';
+import { COMMUNITY_CHANGELOG_PATH, TANGCUYU_SERVER_UPDATES_PATH } from '@/custom-channels.js';
 
 const drawerMenuShowing = defineModel<boolean>('drawerMenuShowing');
 const widgetsShowing = defineModel<boolean>('widgetsShowing');
@@ -88,7 +94,7 @@ watch(rootEl, () => {
 	z-index: 1;
 	padding-bottom: env(safe-area-inset-bottom, 0px);
 	display: grid;
-	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+	grid-template-columns: repeat(7, 1fr);
 	width: 100%;
 	box-sizing: border-box;
 	background: var(--MI_THEME-navBg);

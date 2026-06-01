@@ -32,6 +32,9 @@ export const ROUTE_DEF = [{
 	path: '/community-changelog',
 	component: page(() => import('@/pages/community-changelog.vue')),
 }, {
+	path: '/tangcuyu-server-updates',
+	component: page(() => import('@/pages/tangcuyu-server-updates.vue')),
+}, {
 	path: '/@:username/pages/:pageName(*)',
 	component: page(() => import('@/pages/page.vue')),
 }, {

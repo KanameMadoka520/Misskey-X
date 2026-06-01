@@ -137,6 +137,10 @@ export interface Locale extends ILocale {
      */
     "communityChangelog": string;
     /**
+     * 糖醋魚サーバー更新情報
+     */
+    "tangcuyuServerUpdates": string;
+    /**
      * 自己紹介はありません
      */
     "noAccountDescription": string;

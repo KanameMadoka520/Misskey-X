@@ -38,7 +38,7 @@ import { i18n } from '@/i18n.js';
 import { definePage } from '@/page.js';
 import { deviceKind } from '@/utility/device-kind.js';
 import { prefer } from '@/preferences.js';
-import { COMMUNITY_CHANGELOG_CHANNEL_ID } from '@/custom-channels.js';
+import { TANGCUYU_SERVER_UPDATES_CHANNEL_ID } from '@/custom-channels.js';
 
 const channel = ref<Misskey.entities.Channel | null>(null);
 const error = ref<any>(null);
@@ -49,7 +49,7 @@ async function fetchChannel() {
 
 	try {
 		channel.value = await misskeyApi('channels/show', {
-			channelId: COMMUNITY_CHANGELOG_CHANNEL_ID,
+			channelId: TANGCUYU_SERVER_UPDATES_CHANNEL_ID,
 		});
 	} catch (err) {
 		error.value = err;
@@ -66,8 +66,8 @@ function openPostForm() {
 onMounted(fetchChannel);
 
 definePage(() => ({
-	title: i18n.ts.communityChangelog,
-	icon: 'ti ti-clipboard-list',
+	title: i18n.ts.tangcuyuServerUpdates,
+	icon: 'ti ti-fish',
 }));
 </script>
 

@@ -25,6 +25,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-tooltip.noDelay.right="i18n.ts.communityChangelog" :class="$style.item" :activeClass="$style.active" :to="COMMUNITY_CHANGELOG_PATH">
 				<i :class="$style.itemIcon" class="ti ti-clipboard-list ti-fw" style="view-transition-name: navbar-communityChangelog;"></i><span :class="$style.itemText">{{ i18n.ts.communityChangelog }}</span>
 			</MkA>
+			<MkA v-tooltip.noDelay.right="i18n.ts.tangcuyuServerUpdates" :class="$style.item" :activeClass="$style.active" :to="TANGCUYU_SERVER_UPDATES_PATH">
+				<i :class="$style.itemIcon" class="ti ti-fish ti-fw" style="view-transition-name: navbar-tangcuyuServerUpdates;"></i><span :class="$style.itemText">{{ i18n.ts.tangcuyuServerUpdates }}</span>
+			</MkA>
 			<template v-for="item in prefer.r.menu.value">
 				<div v-if="item === '-'" :class="$style.divider"></div>
 				<component
@@ -119,7 +122,7 @@ import { useRouter } from '@/router.js';
 import { prefer } from '@/preferences.js';
 import { getAccountMenu } from '@/accounts.js';
 import { $i } from '@/i.js';
-import { COMMUNITY_CHANGELOG_PATH } from '@/community-changelog.js';
+import { COMMUNITY_CHANGELOG_PATH, TANGCUYU_SERVER_UPDATES_PATH } from '@/custom-channels.js';
 
 const router = useRouter();
 

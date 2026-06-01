@@ -99,7 +99,7 @@ import { notesSearchAvailable } from '@/utility/check-permissions.js';
 import { miLocalStorage } from '@/local-storage.js';
 import { useRouter } from '@/router.js';
 import { Paginator } from '@/utility/paginator.js';
-import { COMMUNITY_CHANGELOG_CHANNEL_ID } from '@/community-changelog.js';
+import { isAdminOnlyChannel } from '@/custom-channels.js';
 
 const router = useRouter();
 
@@ -114,7 +114,7 @@ const favorited = ref(false);
 const searchQuery = ref('');
 const searchPaginator = shallowRef();
 const searchKey = ref('');
-const canPostToChannel = computed(() => $i != null && (props.channelId !== COMMUNITY_CHANGELOG_CHANNEL_ID || $i.isAdmin === true));
+const canPostToChannel = computed(() => $i != null && (!isAdminOnlyChannel(props.channelId) || $i.isAdmin === true));
 const featuredPaginator = markRaw(new Paginator('notes/featured', {
 	limit: 10,
 	computedParams: computed(() => ({
