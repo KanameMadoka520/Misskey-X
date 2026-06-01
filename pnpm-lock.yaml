@@ -124,8 +124,8 @@ importers:
         specifier: 1.2.0
         version: 1.2.0
       '@misskey-dev/summaly':
-        specifier: 5.3.0
-        version: 5.3.0
+        specifier: 5.4.0
+        version: 5.4.0
       '@napi-rs/canvas':
         specifier: 1.0.0
         version: 1.0.0
@@ -748,8 +748,8 @@ importers:
         specifier: 17.0.3
         version: 17.0.3
       '@misskey-dev/summaly':
-        specifier: 5.3.0
-        version: 5.3.0
+        specifier: 5.4.0
+        version: 5.4.0
       '@rollup/plugin-json':
         specifier: 6.1.0
         version: 6.1.0(rollup@4.60.4)
@@ -1050,8 +1050,8 @@ importers:
         specifier: 17.0.3
         version: 17.0.3
       '@misskey-dev/summaly':
-        specifier: 5.3.0
-        version: 5.3.0
+        specifier: 5.4.0
+        version: 5.4.0
       '@tabler/icons-webfont':
         specifier: 3.35.0
         version: 3.35.0
@@ -2520,8 +2520,8 @@ packages:
   '@misskey-dev/sharp-read-bmp@1.2.0':
     resolution: {integrity: sha512-er4pRakXzHYfEgOFAFfQagqDouG+wLm+kwNq1I30oSdIHDa0wM3KjFpfIGQ25Fks4GcmOl1s7Zh6xoQu5dNjTw==}
 
-  '@misskey-dev/summaly@5.3.0':
-    resolution: {integrity: sha512-s3AoGKywk/pNdUtRF/XJGMRDPoFlmcBfk6KxQsdwghQyQeAGDJPw255lMheMMWd00I1pjng14+Yq9yg4V0K4IQ==}
+  '@misskey-dev/summaly@5.4.0':
+    resolution: {integrity: sha512-KB2r2kTEyFjWCE0WLuMolMYhhpVasxUzatUNAoV24ZRgYdbhtifOSAXw3lyjCm5ylVoO0gDhmmWgifsG58aVyQ==}
 
   '@msgpackr-extract/msgpackr-extract-darwin-arm64@3.0.3':
     resolution: {integrity: sha512-QZHtlVgbAdy2zAqNA9Gu1UpIuI8Xvsd1v8ic6B2pZmeFnFcMWiPLfWXh7TVw4eGEZ/C9TH281KwhVoeQUKbyjw==}
@@ -6745,10 +6745,6 @@ packages:
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
-
-  ipaddr.js@2.3.0:
-    resolution: {integrity: sha512-Zv/pA+ciVFbCSBBjGfaKUya/CcGmUHzTydLMaTwrUUEM2DIEO3iZvueGxmacvmN50fGpGVKeTXpb2LcYQxeVdg==}
-    engines: {node: '>= 10'}
 
   ipaddr.js@2.4.0:
     resolution: {integrity: sha512-9VGk3HGanVE6JoZXHiCpnGy5X0jYDnN4EA4lntFPj+1vIWlFhIylq2CrrCOJH9EAhc5CYhq18F2Av2tgoAPsYQ==}
@@ -11616,15 +11612,14 @@ snapshots:
       decode-ico: 0.4.1
       sharp: 0.33.5
 
-  '@misskey-dev/summaly@5.3.0':
+  '@misskey-dev/summaly@5.4.0':
     dependencies:
       chardet: 2.1.1
       cheerio: 1.2.0
       escape-regexp: 0.0.1
       got: 15.0.3
       html-entities: 2.6.0
-      iconv-lite: 0.7.2
-      ipaddr.js: 2.3.0
+      ipaddr.js: 2.4.0
     optionalDependencies:
       fastify: 5.8.5
 
@@ -16319,8 +16314,6 @@ snapshots:
       ip-address: 9.0.5
 
   ipaddr.js@1.9.1: {}
-
-  ipaddr.js@2.3.0: {}
 
   ipaddr.js@2.4.0: {}
 

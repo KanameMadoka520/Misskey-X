@@ -324,6 +324,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 									</MkSelect>
 								</MkPreferenceContainer>
 							</SearchMarker>
+
+							<SearchMarker :keywords="['urlpreview', 'url', 'link', 'preview', 'card', 'large', 'compact']">
+								<MkPreferenceContainer k="forceCompactUrlPreview">
+									<MkSwitch v-model="forceCompactUrlPreview" :disabled="!instance.enableUrlPreview || dataSaver.disableUrlPreview">
+										<template #label><SearchLabel>{{ i18n.ts.forceCompactUrlPreview }}</SearchLabel></template>
+									</MkSwitch>
+								</MkPreferenceContainer>
+							</SearchMarker>
 						</div>
 					</div>
 				</MkFolder>
@@ -935,6 +943,7 @@ const showMediaListByGridInWideArea = prefer.model('showMediaListByGridInWideAre
 const reactionsDisplaySize = prefer.model('reactionsDisplaySize');
 const limitWidthOfReaction = prefer.model('limitWidthOfReaction');
 const squareAvatars = prefer.model('squareAvatars');
+const forceCompactUrlPreview = prefer.model('forceCompactUrlPreview');
 const enableSeasonalScreenEffect = prefer.model('enableSeasonalScreenEffect');
 const showAvatarDecorations = prefer.model('showAvatarDecorations');
 const nsfw = prefer.model('nsfw');
@@ -998,6 +1007,7 @@ watch([
 	limitWidthOfReaction,
 	instanceTicker,
 	squareAvatars,
+	forceCompactUrlPreview,
 	highlightSensitiveMedia,
 	enableSeasonalScreenEffect,
 	chatShowSenderName,

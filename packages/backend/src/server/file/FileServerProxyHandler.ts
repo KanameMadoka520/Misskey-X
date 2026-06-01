@@ -25,6 +25,7 @@ type ProxyQuery = {
 	avatar?: string;
 	static?: string;
 	preview?: string;
+	thumbnail?: string;
 	badge?: string;
 	origin?: string;
 	url?: string;
@@ -131,7 +132,7 @@ export class FileServerProxyHandler {
 	): Promise<IImageStreamable> {
 		const query = request.query;
 
-		const requiresImageConversion = 'emoji' in query || 'avatar' in query || 'static' in query || 'preview' in query || 'badge' in query;
+		const requiresImageConversion = 'emoji' in query || 'avatar' in query || 'static' in query || 'preview' in query || 'thumbnail' in query || 'badge' in query;
 		const isConvertibleImage = isMimeImage(file.mime, 'sharp-convertible-image-with-bmp');
 		if (requiresImageConversion && !isConvertibleImage) {
 			throw new StatusError('Unexpected mime', 404);
@@ -139,6 +140,10 @@ export class FileServerProxyHandler {
 
 		if ('emoji' in query || 'avatar' in query) {
 			return this.processEmojiOrAvatar(file, query);
+		}
+
+		if ('thumbnail' in query) {
+			return this.imageProcessingService.convertSharpToWebpStream(await sharpBmp(file.path, file.mime), 1280, 720);
 		}
 
 		if ('static' in query) {

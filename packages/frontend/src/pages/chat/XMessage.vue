@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			/>
 			<MkMediaList v-if="message.file" :mediaList="[message.file]"/>
 		</MkFukidashi>
-		<MkUrlPreview v-for="url in urls" :key="url" :url="url" style="margin: 8px 0;"/>
+		<MkUrlPreview v-for="url in urls" :key="url" :url="url" :forceCompactCard="forceCompactUrlPreviewCards" style="margin: 8px 0;"/>
 		<div :class="$style.footer">
 			<button class="_textButton" style="color: currentColor;" @click="showMenu"><i class="ti ti-dots-circle-horizontal"></i></button>
 			<MkTime :class="$style.time" :time="message.createdAt"/>
@@ -83,6 +83,7 @@ const props = defineProps<{
 
 const isMe = computed(() => props.message.fromUserId === $i.id);
 const urls = computed(() => props.message.text ? extractUrlFromMfm(mfm.parse(props.message.text)) : []);
+const forceCompactUrlPreviewCards = computed(() => urls.value.length >= 2 || props.message.file != null);
 
 provide(DI.mfmEmojiReactCallback, (reaction) => {
 	if ($i.policies.chatAvailability !== 'available') return;

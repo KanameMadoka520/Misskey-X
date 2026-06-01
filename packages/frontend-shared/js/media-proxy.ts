@@ -15,7 +15,7 @@ export class MediaProxy {
 		this.url = url;
 	}
 
-	public getProxiedImageUrl(imageUrl: string, type?: 'preview' | 'emoji' | 'avatar', mustOrigin = false, noFallback = false): string {
+	public getProxiedImageUrl(imageUrl: string, type?: 'preview' | 'emoji' | 'avatar' | 'thumbnail', mustOrigin = false, noFallback = false): string {
 		const localProxy = `${this.url}/proxy`;
 		let _imageUrl = imageUrl;
 
@@ -30,12 +30,12 @@ export class MediaProxy {
 		}?${query({
 			url: _imageUrl,
 			...(!noFallback ? { 'fallback': '1' } : {}),
-			...(type ? { [type]: '1' } : {}),
+			...(type === 'thumbnail' ? { thumbnail: '1', static: '1' } : type ? { [type]: '1' } : {}),
 			...(mustOrigin ? { origin: '1' } : {}),
 		})}`;
 	}
 
-	public getProxiedImageUrlNullable(imageUrl: string | null | undefined, type?: 'preview'): string | null {
+	public getProxiedImageUrlNullable(imageUrl: string | null | undefined, type?: 'preview' | 'thumbnail'): string | null {
 		if (imageUrl == null) return null;
 		return this.getProxiedImageUrl(imageUrl, type);
 	}

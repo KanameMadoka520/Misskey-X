@@ -124,7 +124,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						:class="$style.poll"
 					/>
 					<div v-if="isEnabledUrlPreview">
-						<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="true" style="margin-top: 6px;"/>
+						<MkUrlPreview v-for="url in urls" :key="url" :url="url" :compact="true" :detail="true" :forceCompactCard="forceCompactUrlPreviewCards" style="margin-top: 6px;"/>
 					</div>
 					<div v-if="appearNote.renote" :class="$style.quote"><MkNoteSimple :note="appearNote.renote" :class="$style.quoteNote"/></div>
 				</div>
@@ -340,6 +340,7 @@ const translation = ref<Misskey.entities.NotesTranslateResponse | null>(null);
 const translating = ref(false);
 const parsed = appearNote.text ? mfm.parse(appearNote.text) : null;
 const urls = parsed ? extractUrlFromMfm(parsed).filter((url) => appearNote.renote?.url !== url && appearNote.renote?.uri !== url) : null;
+const forceCompactUrlPreviewCards = (urls?.length ?? 0) >= 2 || (appearNote.files != null && appearNote.files.length > 0);
 const showTicker = (prefer.s.instanceTicker === 'always') || (prefer.s.instanceTicker === 'remote' && appearNote.user.instance);
 const conversation = ref<Misskey.entities.Note[]>([]);
 const replies = ref<Misskey.entities.Note[]>([]);
