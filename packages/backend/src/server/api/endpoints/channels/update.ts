@@ -205,6 +205,11 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 							userId,
 						})));
 					}
+				} else if (nextOwnerId !== undefined && nextOwnerId !== null) {
+					await transactionalEntityManager.delete(MiChannelCollaborator, {
+						channelId: channel.id,
+						userId: nextOwnerId,
+					});
 				}
 			});
 

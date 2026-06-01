@@ -572,6 +572,59 @@ describe('Endpoints', () => {
 		});
 	});
 
+	describe('channels/update', () => {
+		test('管理者がチャンネル管理者を移譲すると新しい管理者として判定される', async () => {
+			const create = await api('channels/create', {
+				name: 'owner-transfer-source',
+			}, bob);
+			assert.strictEqual(create.status, 200);
+
+			const channelId = create.body.id;
+			const beforeOwner = await api('channels/show', { channelId }, bob);
+			assert.strictEqual(beforeOwner.status, 200);
+			assert.strictEqual(beforeOwner.body.userId, bob.id);
+			assert.strictEqual((beforeOwner.body as any).isOwner, true);
+			assert.strictEqual((beforeOwner.body as any).canEdit, true);
+
+			const beforeOther = await api('channels/show', { channelId }, carol);
+			assert.strictEqual(beforeOther.status, 200);
+			assert.strictEqual((beforeOther.body as any).isOwner, false);
+			assert.strictEqual((beforeOther.body as any).canEdit, false);
+
+			const update = await api('channels/update' as any, {
+				channelId,
+				name: 'owner-transfer-target',
+				userId: carol.id,
+				collaboratorUserIds: [bob.id, carol.id],
+			} as any, alice);
+			assert.strictEqual(update.status, 200);
+			assert.strictEqual((update.body as any).userId, carol.id);
+			assert.strictEqual((update.body as any).isOwner, false);
+			assert.strictEqual((update.body as any).canEdit, true);
+
+			const newOwner = await api('channels/show', { channelId }, carol);
+			assert.strictEqual(newOwner.status, 200);
+			assert.strictEqual(newOwner.body.userId, carol.id);
+			assert.strictEqual((newOwner.body as any).isOwner, true);
+			assert.strictEqual((newOwner.body as any).canEdit, true);
+			assert.deepStrictEqual((newOwner.body as any).collaboratorUserIds, [bob.id]);
+
+			const oldOwner = await api('channels/show', { channelId }, bob);
+			assert.strictEqual(oldOwner.status, 200);
+			assert.strictEqual((oldOwner.body as any).isOwner, false);
+			assert.strictEqual((oldOwner.body as any).isCollaborator, true);
+			assert.strictEqual((oldOwner.body as any).canEdit, false);
+
+			const owned = await api('channels/owned', { limit: 100 }, carol);
+			assert.strictEqual(owned.status, 200);
+			assert.strictEqual(owned.body.some(channel => channel.id === channelId), true);
+
+			const oldOwned = await api('channels/owned', { limit: 100 }, bob);
+			assert.strictEqual(oldOwned.status, 200);
+			assert.strictEqual(oldOwned.body.some(channel => channel.id === channelId), false);
+		});
+	});
+
 	describe('drive', () => {
 		test('ドライブ情報を取得できる', async () => {
 			const res = await api('drive', {}, alice);

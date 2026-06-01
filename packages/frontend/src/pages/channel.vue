@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<div :class="$style.bannerStatus">
 						<div><i class="ti ti-users ti-fw"></i><I18n :src="i18n.ts._channel.usersCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.usersCount }}</b></template></I18n></div>
 						<div><i class="ti ti-pencil ti-fw"></i><I18n :src="i18n.ts._channel.notesCount" tag="span" style="margin-left: 4px;"><template #n><b>{{ channel.notesCount }}</b></template></I18n></div>
-						<div v-if="$i != null && channel != null && $i.id === channel.userId" style="color: var(--MI_THEME-warn)"><i class="ti ti-user-star ti-fw"></i><span style="margin-left: 4px;">{{ i18n.ts.youAreAdmin }}</span></div>
+						<div v-if="iAmChannelOwner" style="color: var(--MI_THEME-warn)"><i class="ti ti-user-star ti-fw"></i><span style="margin-left: 4px;">{{ i18n.ts.youAreAdmin }}</span></div>
 					</div>
 					<div v-if="channel.isSensitive" :class="$style.sensitiveIndicator">{{ i18n.ts.sensitive }}</div>
 					<div :class="$style.bannerFade"></div>
@@ -137,6 +137,8 @@ type ChannelWithPermissions = Misskey.entities.Channel & {
 	postingPermission?: ChannelPostingPermission;
 	collaboratorUserIds?: string[];
 	isCollaborator?: boolean;
+	isOwner?: boolean;
+	canEdit?: boolean;
 };
 type ChannelUsersResponse = {
 	owner: Misskey.entities.User | null;
@@ -168,10 +170,14 @@ const canPostToChannel = computed(() => {
 	if ($i.isAdmin === true) return true;
 	const postingPermission = channel.value.postingPermission ?? 'everyone';
 	if (postingPermission === 'everyone') return true;
-	if (channel.value.userId === $i.id) return true;
+	if (channel.value.isOwner === true || channel.value.userId === $i.id) return true;
 	if (postingPermission === 'ownerAndCollaborators' && channel.value.collaboratorUserIds?.includes($i.id)) return true;
 	if (postingPermission === 'ownerAndCollaborators' && channel.value.isCollaborator === true) return true;
 	return false;
+});
+const iAmChannelOwner = computed(() => {
+	if ($i == null || channel.value == null) return false;
+	return channel.value.isOwner === true || channel.value.userId === $i.id;
 });
 const featuredPaginator = markRaw(new Paginator('notes/featured', {
 	limit: 10,
@@ -405,7 +411,7 @@ const headerActions = computed(() => {
 			});
 		}
 
-		if (($i && $i.id === channel.value.userId) || iAmModerator) {
+		if (channel.value.canEdit === true || ($i && $i.id === channel.value.userId) || iAmModerator) {
 			headerItems.push({
 				icon: 'ti ti-settings',
 				text: i18n.ts.edit,

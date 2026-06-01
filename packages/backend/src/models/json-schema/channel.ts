@@ -98,6 +98,14 @@ export const packedChannelSchema = {
 			type: 'boolean',
 			optional: true, nullable: false,
 		},
+		isOwner: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
+		canEdit: {
+			type: 'boolean',
+			optional: true, nullable: false,
+		},
 		collaboratorUserIds: {
 			type: 'array',
 			optional: true, nullable: false,

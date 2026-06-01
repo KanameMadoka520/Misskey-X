@@ -21,6 +21,7 @@ import type { MiUser } from '@/models/User.js';
 import type { MiChannel } from '@/models/Channel.js';
 import { bindThis } from '@/decorators.js';
 import { IdService } from '@/core/IdService.js';
+import { RoleService } from '@/core/RoleService.js';
 import { DriveFileEntityService } from './DriveFileEntityService.js';
 import { NoteEntityService } from './NoteEntityService.js';
 
@@ -44,6 +45,7 @@ export class ChannelEntityService {
 		private noteEntityService: NoteEntityService,
 		private driveFileEntityService: DriveFileEntityService,
 		private idService: IdService,
+		private roleService: RoleService,
 	) {
 	}
 
@@ -58,6 +60,7 @@ export class ChannelEntityService {
 			favorites?: Set<MiChannel['id']>;
 			muting?: Set<MiChannel['id']>;
 			pinnedNotes?: Map<MiNote['id'], MiNote>;
+			meIsModerator?: boolean;
 		},
 	): Promise<Packed<'Channel'>> {
 		const channel = typeof src === 'object' ? src : await this.channelsRepository.findOneByOrFail({ id: src });
@@ -72,7 +75,12 @@ export class ChannelEntityService {
 		let isFavorited = false;
 		let isMuting = false;
 		let isCollaborator = false;
+		let isOwner = false;
+		let canEdit = false;
 		if (me) {
+			isOwner = channel.userId === me.id;
+			canEdit = isOwner || (opts?.meIsModerator ?? await this.roleService.isModerator(me));
+
 			isFollowing = opts?.followings?.has(channel.id) ?? await this.channelFollowingsRepository.exists({
 				where: {
 					followerId: me.id,
@@ -149,6 +157,8 @@ export class ChannelEntityService {
 				isFavorited,
 				isMuting,
 				isCollaborator,
+				isOwner,
+				canEdit,
 				hasUnreadNote: false, // 後方互換性のため
 			} : {}),
 
@@ -217,12 +227,15 @@ export class ChannelEntityService {
 			})
 			.then(it => new Map(it.map(it => [it.id, it])));
 
+		const meIsModerator = me ? await this.roleService.isModerator(me) : false;
+
 		return Promise.all(channels.map(it => this.pack(it, me, detailed, {
 			bannerFiles,
 			followings,
 			favorites,
 			muting,
 			pinnedNotes,
+			meIsModerator,
 		})));
 	}
 }

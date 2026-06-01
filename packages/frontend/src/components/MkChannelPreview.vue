@@ -27,7 +27,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						</template>
 					</I18n>
 				</div>
-				<div v-if="$i != null && $i.id === channel.userId" style="color: var(--MI_THEME-warn)">
+				<div v-if="iAmChannelOwner" style="color: var(--MI_THEME-warn)">
 					<i class="ti ti-user-star ti-fw"></i>
 					<span style="margin-left: 4px;">{{ i18n.ts.youAreAdmin }}</span>
 				</div>
@@ -59,6 +59,16 @@ import { miLocalStorage } from '@/local-storage.js';
 const props = defineProps<{
 	channel: Misskey.entities.Channel;
 }>();
+
+type ChannelWithPermissions = Misskey.entities.Channel & {
+	isOwner?: boolean;
+	canEdit?: boolean;
+};
+
+const iAmChannelOwner = computed(() => {
+	const channel = props.channel as ChannelWithPermissions;
+	return channel.isOwner === true || ($i != null && $i.id === channel.userId);
+});
 
 const getLastReadedAt = (): number | null => {
 	return miLocalStorage.getItemAsJson(`channelLastReadedAt:${props.channel.id}`) ?? null;
