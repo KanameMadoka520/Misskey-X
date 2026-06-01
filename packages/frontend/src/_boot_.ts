@@ -6,6 +6,11 @@
 // https://vitejs.dev/config/build-options.html#build-modulepreload
 import 'vite/modulepreload-polyfill';
 
+// Xtcymc 实验性主题：必须最早注入，先于 style.scss + 任何组件 CSS
+// 防止用户开启实验性主题后首屏先闪一下默认 Misskey 设计再切换
+import { applyExperimentalTheme, readSavedExperimentalTheme, readSavedExperimentalBg } from '@/experimental-theme.js';
+applyExperimentalTheme(readSavedExperimentalTheme(), readSavedExperimentalBg());
+
 if (import.meta.env.DEV) {
 	await import('@tabler/icons-webfont/dist/tabler-icons.scss');
 } else {

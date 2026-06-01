@@ -164,6 +164,17 @@ export const PREF_DEF = definePreferences({
 	darkTheme: {
 		default: null as Theme | null,
 	},
+	// Xtcymc 实验性主题：null=关闭，其他=对应实验性主题 id（newsprint/terminal/glass/brutalist）
+	// 真相源是 localStorage 'xtcymcExperimentalTheme'（在 _boot_.ts 同步读取避免首屏闪烁）
+	// 此处的 preference 仅供设置界面双向绑定
+	experimentalTheme: {
+		default: null as string | null,
+	},
+	// Xtcymc 实验性主题「背景与动效」开关：true 时各实验性主题更激进地扩张设计
+	// （动画背景/微动效/更大胆的组件处理）。真相源仍是 localStorage 'xtcymcExperimentalBg'
+	experimentalThemeBg: {
+		default: false,
+	},
 	syncDeviceDarkMode: {
 		default: true,
 	},

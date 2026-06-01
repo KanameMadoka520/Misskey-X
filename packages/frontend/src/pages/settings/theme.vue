@@ -10,7 +10,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		@dragover.prevent.stop="onDragover"
 		@drop.prevent.stop="onDrop"
 	>
-		<div v-adaptive-border class="rfqxtzch _panel">
+		<div v-if="experimentalTheme == null" v-adaptive-border class="rfqxtzch _panel">
 			<div class="toggle">
 				<div class="toggleWrapper">
 					<div class="toggle" :class="store.r.darkMode.value ? 'checked' : null" @click="toggleDarkMode()">
@@ -41,7 +41,67 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 		<MkInfo v-if="isSafeMode" warn>{{ i18n.ts.themeIsDefaultBecauseSafeMode }}</MkInfo>
 
-		<div v-else class="_gaps">
+		<MkInfo v-if="!isSafeMode && experimentalTheme != null">
+			<b>实验性主题已接管前端外观。</b>当前已忽略浅色 / 深色模式与所有颜色主题，整套配色由实验性主题独立提供。如需恢复普通配色，请在下方将实验性主题切换为「关闭」。
+		</MkInfo>
+
+		<SearchMarker v-if="!isSafeMode" :keywords="['experimental', 'theme', 'lab', 'xtcymc', '实验性', '主题']">
+			<MkFolder :defaultOpen="experimentalTheme != null" :max-height="600">
+				<template #icon><i class="ti ti-flask"></i></template>
+				<template #label><SearchLabel>实验性主题（Xtcymc Lab）</SearchLabel></template>
+				<template #caption>{{ experimentalThemeName }}</template>
+
+				<div class="_gaps_m">
+					<MkInfo>
+						实验性主题会用一整套激进的设计语言覆盖前端，启用后会忽略当前选中的浅色/深色配色与颜色主题，但所有功能与信息条目都保留。切换实验性主题会自动刷新页面让样式完整生效。
+					</MkInfo>
+					<div :class="$style.themeSelect">
+						<div :class="$style.themeItemOuter">
+							<input
+								id="xtcymcExpRadio_none"
+								v-model="experimentalThemeChoice"
+								type="radio"
+								name="xtcymcExpTheme"
+								:class="$style.themeRadio"
+								:value="null"
+							/>
+							<label for="xtcymcExpRadio_none" :class="$style.themeItemRoot" class="_button">
+								<div :class="$style.expCard" style="background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%); color: #333;">
+									<i class="ti ti-x" style="font-size: 32px; opacity: .7;"></i>
+									<div style="font-weight: 700; margin-top: 8px;">关闭</div>
+									<div style="font-size: 11.5px; opacity: .65; margin-top: 4px; line-height: 1.4;">使用上方选择的颜色主题</div>
+								</div>
+								<div :class="$style.themeItemCaption">关闭实验性主题</div>
+							</label>
+						</div>
+						<div v-for="exp in experimentalThemes" :key="exp.id" :class="$style.themeItemOuter">
+							<input
+								:id="`xtcymcExpRadio_${exp.id}`"
+								v-model="experimentalThemeChoice"
+								type="radio"
+								name="xtcymcExpTheme"
+								:class="$style.themeRadio"
+								:value="exp.id"
+							/>
+							<label :for="`xtcymcExpRadio_${exp.id}`" :class="$style.themeItemRoot" class="_button">
+								<div :class="[$style.expCard, $style[`expCard_${exp.id}`]]">
+									<i :class="exp.icon" style="font-size: 32px;"></i>
+									<div style="font-weight: 700; margin-top: 8px;">{{ exp.name }}</div>
+									<div style="font-size: 11.5px; opacity: .85; margin-top: 4px; line-height: 1.4;">{{ exp.tagline }}</div>
+								</div>
+								<div :class="$style.themeItemCaption">{{ exp.name }}</div>
+							</label>
+						</div>
+					</div>
+					<MkSwitch v-if="experimentalTheme != null" v-model="experimentalBg">
+						<template #label>实验性主题背景与动效</template>
+						<template #caption>开启后该实验性主题会更激进地扩张自己的设计 —— 动画背景、微动效、更大胆的组件处理与过场，让主题更具张力。立即生效，无需刷新；关闭即回到安静版本。</template>
+					</MkSwitch>
+				</div>
+			</MkFolder>
+		</SearchMarker>
+
+		<div v-if="!isSafeMode && experimentalTheme == null" class="_gaps">
 			<template v-if="!store.r.darkMode.value">
 				<SearchMarker :keywords="['light', 'theme']">
 					<MkFolder :defaultOpen="true" :max-height="500">
@@ -220,6 +280,7 @@ import MkThemePreview from '@/components/MkThemePreview.vue';
 import MkInfo from '@/components/MkInfo.vue';
 import { handleThemeInstallError, installTheme, removeTheme } from '@/theme.js';
 import { getBuiltinThemes } from '@@/js/theme.js';
+import { EXPERIMENTAL_THEMES, setExperimentalTheme, readSavedExperimentalTheme, setExperimentalBg, readSavedExperimentalBg, type ExperimentalThemeId } from '@/experimental-theme.js';
 import { isDeviceDarkmode } from '@/utility/is-device-darkmode.js';
 import { store } from '@/store.js';
 import { i18n } from '@/i18n.js';
@@ -273,6 +334,36 @@ const lightThemeId = computed({
 
 const syncDeviceDarkMode = prefer.model('syncDeviceDarkMode');
 const themesCount = installedThemes.value.length;
+
+// === Xtcymc 实验性主题 ===
+const experimentalThemes = EXPERIMENTAL_THEMES;
+const experimentalTheme = ref<string | null>(readSavedExperimentalTheme());
+const experimentalThemeName = computed(() => {
+	if (experimentalTheme.value == null) return '关闭';
+	return EXPERIMENTAL_THEMES.find(t => t.id === experimentalTheme.value)?.name ?? '关闭';
+});
+const experimentalThemeChoice = computed({
+	get: () => experimentalTheme.value,
+	set: (value) => {
+		const newVal = (value ?? null) as ExperimentalThemeId | null;
+		if (newVal === experimentalTheme.value) return;
+		experimentalTheme.value = newVal;
+		setExperimentalTheme(newVal);
+		prefer.commit('experimentalTheme', newVal);
+		// 切换实验性主题需要 reload 让所有 Vue 组件用新 CSS 重新 mount
+		// 否则部分在 mount 期计算 DOM 尺寸的组件可能保留旧布局
+		window.setTimeout(() => window.location.reload(), 150);
+	},
+});
+
+// 「背景与动效」开关：纯 CSS 即时生效，无需 reload
+// 用 ref 持有状态（localStorage 非响应式，若 computed 的 getter 直接读它，
+// 切换后 computed 不会失效重算 → 开关 UI 卡在旧值不动）。
+const experimentalBg = ref<boolean>(readSavedExperimentalBg());
+watch(experimentalBg, (value) => {
+	setExperimentalBg(value);
+	prefer.commit('experimentalThemeBg', value);
+});
 
 watch(syncDeviceDarkMode, () => {
 	if (syncDeviceDarkMode.value) {
@@ -396,6 +487,118 @@ definePage(() => ({
 	box-sizing: border-box;
 	border: 2px solid var(--MI_THEME-divider);
 	border-radius: var(--MI-radius);
+}
+
+/* === Xtcymc 实验性主题预览卡片 === */
+.expCard {
+	aspect-ratio: 16 / 9;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 14px 12px;
+	text-align: center;
+	color: #fff;
+}
+.expCard_newsprint {
+	background: #FFFDF5;
+	color: #1A1612;
+	border-bottom: 3px double #1A1612;
+	font-family: "Source Serif Pro", Georgia, serif;
+}
+.expCard_terminal {
+	background: #0A0E14;
+	color: #00FF88;
+	font-family: "JetBrains Mono", Consolas, monospace;
+	box-shadow: 0 0 24px rgba(0, 255, 136, .15) inset;
+}
+.expCard_glass {
+	background:
+		radial-gradient(circle at 30% 30%, rgba(107, 63, 160, .6), transparent 60%),
+		radial-gradient(circle at 70% 70%, rgba(46, 143, 184, .6), transparent 60%),
+		linear-gradient(135deg, #FFE6FB 0%, #E0F4FF 50%, #FFE0E8 100%);
+	color: #1A1233;
+	backdrop-filter: blur(10px);
+}
+.expCard_brutalist {
+	background: #FFD9C2;
+	color: #000;
+	border: 3px solid #000;
+	box-shadow: 6px 6px 0 #FF3D00;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+.expCard_synthwave {
+	background: linear-gradient(180deg, #2A0E4F 0%, #1A0B2E 60%, #3A1156 100%);
+	color: #FF2E97;
+	border: 1px solid #00E5FF;
+	text-shadow: 0 0 8px rgba(255,46,151,.7);
+}
+.expCard_aurora {
+	background: radial-gradient(circle at 30% 20%, rgba(94,234,212,.5), transparent 60%), radial-gradient(circle at 70% 80%, rgba(167,139,250,.5), transparent 60%), #04121C;
+	color: #5EEAD4;
+}
+.expCard_eink {
+	background: #F3F1EA;
+	color: #1B1B1B;
+	border: 1px solid #1B1B1B;
+	font-family: Georgia, "Songti SC", serif;
+}
+.expCard_riso {
+	background: #ECE3D0;
+	color: #FF4D6D;
+	border: 2px solid #2541B2;
+	box-shadow: 4px 4px 0 rgba(37,65,178,.5);
+}
+.expCard_comic {
+	background: #FBF7EC;
+	color: #E63946;
+	border: 3px solid #000;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+.expCard_blueprint {
+	background: #0A1A2F;
+	color: #62B6F2;
+	border: 1px solid #62B6F2;
+	background-image: linear-gradient(rgba(98,182,242,.18) 1px, transparent 1px), linear-gradient(90deg, rgba(98,182,242,.18) 1px, transparent 1px);
+	background-size: 12px 12px;
+}
+.expCard_solarpunk {
+	background: #F4F0E2;
+	color: #5E8C5A;
+	border: 1px solid #5E8C5A;
+	font-family: Georgia, serif;
+}
+.expCard_deco {
+	background: radial-gradient(circle at 50% 0%, rgba(200,162,75,.35), transparent 60%), #0E0E10;
+	color: #C8A24B;
+	border: 1px solid #C8A24B;
+	letter-spacing: .12em;
+	text-transform: uppercase;
+}
+.expCard_steam {
+	background: #E9DCC0;
+	color: #B0793A;
+	border: 2px solid #B0793A;
+	font-family: Georgia, serif;
+}
+.expCard_holo {
+	background: linear-gradient(120deg, #f6d5f7, #d5e8f7, #d5f7e8, #f7e8d5, #e8d5f7);
+	color: #5A4AA8;
+	border: 1px solid #b9c2d6;
+}
+.expCard_aqua {
+	background: linear-gradient(180deg, #03263A 0%, #061E2E 100%);
+	color: #5EEAD4;
+	border: 1px solid #34D6C8;
+}
+.expCard_notebook {
+	background: repeating-linear-gradient(#FBF8EE 0 21px, #C9D6F0 21px 22px);
+	color: #2E5AAC;
+	border: 1px solid #C9D6F0;
+	border-left: 3px solid #E2574C;
 }
 
 .themeRadio:focus-visible + .themeItemRoot {
