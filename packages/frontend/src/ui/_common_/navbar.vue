@@ -19,13 +19,13 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</button>
 		</div>
 		<div :class="$style.middle">
-			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" :class="$style.item" :activeClass="$style.active" to="/" exact>
+			<MkA v-tooltip.noDelay.right="i18n.ts.timeline" class="_button" :class="$style.item" :activeClass="$style.active" to="/" exact>
 				<i :class="$style.itemIcon" class="ti ti-home ti-fw" style="view-transition-name: navbar-homeIcon;"></i><span :class="$style.itemText">{{ i18n.ts.timeline }}</span>
 			</MkA>
-			<MkA v-tooltip.noDelay.right="i18n.ts.communityChangelog" :class="$style.item" :activeClass="$style.active" :to="COMMUNITY_CHANGELOG_PATH">
+			<MkA v-tooltip.noDelay.right="i18n.ts.communityChangelog" class="_button" :class="$style.item" :activeClass="$style.active" :to="COMMUNITY_CHANGELOG_PATH">
 				<i :class="$style.itemIcon" class="ti ti-clipboard-list ti-fw" style="view-transition-name: navbar-communityChangelog;"></i><span :class="$style.itemText">{{ i18n.ts.communityChangelog }}</span>
 			</MkA>
-			<MkA v-tooltip.noDelay.right="i18n.ts.tangcuyuServerUpdates" :class="$style.item" :activeClass="$style.active" :to="TANGCUYU_SERVER_UPDATES_PATH">
+			<MkA v-tooltip.noDelay.right="i18n.ts.tangcuyuServerUpdates" class="_button" :class="$style.item" :activeClass="$style.active" :to="TANGCUYU_SERVER_UPDATES_PATH">
 				<i :class="$style.itemIcon" class="ti ti-fish ti-fw" style="view-transition-name: navbar-tangcuyuServerUpdates;"></i><span :class="$style.itemText">{{ i18n.ts.tangcuyuServerUpdates }}</span>
 			</MkA>
 			<template v-for="item in prefer.r.menu.value">
@@ -48,14 +48,14 @@ SPDX-License-Identifier: AGPL-3.0-only
 				</component>
 			</template>
 			<div :class="$style.divider"></div>
-			<MkA v-if="$i != null && ($i.isAdmin || $i.isModerator)" v-tooltip.noDelay.right="i18n.ts.controlPanel" :class="$style.item" :activeClass="$style.active" to="/admin">
+			<MkA v-if="$i != null && ($i.isAdmin || $i.isModerator)" v-tooltip.noDelay.right="i18n.ts.controlPanel" class="_button" :class="$style.item" :activeClass="$style.active" to="/admin">
 				<i :class="$style.itemIcon" class="ti ti-dashboard ti-fw" style="view-transition-name: navbar-controlPanel;"></i><span :class="$style.itemText">{{ i18n.ts.controlPanel }}</span>
 			</MkA>
 			<button class="_button" :class="$style.item" @click="more">
 				<i :class="$style.itemIcon" class="ti ti-grid-dots ti-fw" style="view-transition-name: navbar-more;"></i><span :class="$style.itemText">{{ i18n.ts.more }}</span>
 				<span v-if="otherMenuItemIndicated" :class="$style.itemIndicator" class="_blink"><i class="_indicatorCircle"></i></span>
 			</button>
-			<MkA v-tooltip.noDelay.right="i18n.ts.settings" :class="$style.item" :activeClass="$style.active" to="/settings">
+			<MkA v-tooltip.noDelay.right="i18n.ts.settings" class="_button" :class="$style.item" :activeClass="$style.active" to="/settings">
 				<i :class="$style.itemIcon" class="ti ti-settings ti-fw" style="view-transition-name: navbar-settings;"></i><span :class="$style.itemText">{{ i18n.ts.settings }}</span>
 			</MkA>
 		</div>
