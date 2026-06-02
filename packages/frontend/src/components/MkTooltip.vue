@@ -12,7 +12,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	appear :css="prefer.s.animation"
 	@afterLeave="emit('closed')"
 >
-	<div v-show="showing" ref="el" :class="$style.root" class="_acrylic _shadow" :style="{ zIndex, maxWidth: maxWidth + 'px' }">
+	<div v-show="showing" ref="el" data-xtcymc-tooltip :class="$style.root" class="_acrylic _shadow" :style="{ '--xtcymc-tooltip-z-index': String(zIndex), zIndex, maxWidth: maxWidth + 'px' }">
 		<slot>
 			<template v-if="text">
 				<Mfm v-if="asMfm" :text="text"/>

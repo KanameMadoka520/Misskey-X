@@ -86,9 +86,9 @@ type ExpTheme = {
 	margin: string;
 	blur: string;
 	modalBgFilter: string;
-	palette: Palette;     // overrides merged over BASE_LIGHT/DARK
-	structural: string;   // shape / font / texture, scoped to html[data-xtcymc-exp="<id>"]
-	aggressive?: string;  // 「背景与动效」开启时追加的更激进设计，scoped to html[data-xtcymc-exp="<id>"][data-xtcymc-exp-bg]
+	palette: Palette; // overrides merged over BASE_LIGHT/DARK
+	structural: string; // shape / font / texture, scoped to html[data-xtcymc-exp="<id>"]
+	aggressive?: string; // 「背景与动效」开启时追加的更激进设计，scoped to html[data-xtcymc-exp="<id>"][data-xtcymc-exp-bg]
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1265,6 +1265,33 @@ const NOTEBOOK: ExpTheme = {
 
 const THEMES: ExpTheme[] = [NEWSPRINT, TERMINAL, GLASS, BRUTALIST, SYNTHWAVE, AURORA, EINK, RISO, COMIC, BLUEPRINT, SOLARPUNK, DECO, STEAM, HOLO, AQUA, NOTEBOOK];
 
+const NOTEBOOK_LAYOUT_GUARD = `
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar] a,
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar] button {
+	white-space: nowrap !important;
+}
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-post],
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-account],
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-avatar],
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-avatar] > img {
+	box-sizing: border-box !important;
+	animation: none !important;
+	transform: none !important;
+}
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-post],
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-account] {
+	contain: layout paint !important;
+}
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-post] *,
+html[data-xtcymc-exp="notebook"] [data-xtcymc-navbar-account] * {
+	white-space: nowrap !important;
+}
+html[data-xtcymc-exp="notebook"][data-xtcymc-exp-bg] [data-xtcymc-tooltip]._acrylic {
+	position: absolute !important;
+	z-index: var(--xtcymc-tooltip-z-index) !important;
+}
+`;
+
 function buildCss(t: ExpTheme): string {
 	const base = t.scheme === 'dark' ? BASE_DARK : BASE_LIGHT;
 	const merged: Palette = { ...base, ...t.palette };
@@ -1293,7 +1320,8 @@ function buildCss(t: ExpTheme): string {
 		`${X} ._popup a, ${X} ._popup button, ${X} .szkkfdyq a, ${X} .szkkfdyq button {\n` +
 		`\t-webkit-text-fill-color: currentColor !important; -webkit-background-clip: border-box !important; background-clip: border-box !important;\n}`;
 	// aggressive 块已自带 [data-xtcymc-exp-bg] 作用域，常驻注入，靠 html 上是否有该属性来开关
-	return `${vars}\n${t.structural}\n${t.aggressive ?? ''}\n${guard}`;
+	const layoutGuard = t.id === 'notebook' ? NOTEBOOK_LAYOUT_GUARD : '';
+	return `${vars}\n${t.structural}\n${t.aggressive ?? ''}\n${guard}\n${layoutGuard}`;
 }
 
 export const EXPERIMENTAL_THEMES: {
@@ -1312,8 +1340,8 @@ export const EXPERIMENTAL_THEMES: {
  */
 export function applyExperimentalTheme(id: string | null | undefined, bg = false): void {
 	const theme = id == null ? null : EXPERIMENTAL_THEMES.find(t => t.id === id) ?? null;
-	const html = document.documentElement;
-	const existing = document.getElementById(STYLE_TAG_ID);
+	const html = window.document.documentElement;
+	const existing = window.document.getElementById(STYLE_TAG_ID);
 
 	if (theme == null) {
 		if (existing) existing.remove();
@@ -1333,16 +1361,16 @@ export function applyExperimentalTheme(id: string | null | undefined, bg = false
 		return;
 	}
 
-	const style = document.createElement('style');
+	const style = window.document.createElement('style');
 	style.id = STYLE_TAG_ID;
 	style.setAttribute('data-xtcymc-exp-id', theme.id);
 	style.textContent = theme.css;
-	document.head.appendChild(style);
+	window.document.head.appendChild(style);
 }
 
 /** 仅切换 html 上的背景/动效属性（aggressive CSS 常驻，靠该属性即时开关，无需 reload）。 */
 function applyExperimentalBgAttr(on: boolean): void {
-	const html = document.documentElement;
+	const html = window.document.documentElement;
 	if (on) html.setAttribute(BG_ATTR, '1');
 	else html.removeAttribute(BG_ATTR);
 }

@@ -4,7 +4,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 -->
 
 <template>
-<div :class="[$style.root, { [$style.iconOnly]: iconOnly }]">
+<div data-xtcymc-navbar :class="[$style.root, { [$style.iconOnly]: iconOnly }]">
 	<div :class="$style.body">
 		<div :class="$style.top">
 			<button v-tooltip.noDelay.right="instance.name ?? i18n.ts.instance" class="_button" :class="$style.instance" @click="openInstanceMenu">
@@ -67,11 +67,11 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<i v-if="store.r.realtimeMode.value" class="ti ti-bolt ti-fw"></i>
 				<i v-else class="ti ti-bolt-off ti-fw"></i>
 			</button>
-			<button v-tooltip.noDelay.right="i18n.ts.note" class="_button" :class="[$style.post]" data-cy-open-post-form @click="() => { os.post(); }">
+			<button v-tooltip.noDelay.right="i18n.ts.note" class="_button" :class="[$style.post]" data-xtcymc-navbar-post data-cy-open-post-form @click="() => { os.post(); }">
 				<i class="ti ti-pencil ti-fw" :class="$style.postIcon"></i><span :class="$style.postText">{{ i18n.ts.note }}</span>
 			</button>
-			<button v-if="$i != null" v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`" class="_button" :class="[$style.account]" @click="openAccountMenu">
-				<MkAvatar :user="$i" :class="$style.avatar" style="view-transition-name: navbar-avatar;"/><MkAcct class="_nowrap" :class="$style.acct" :user="$i"/>
+			<button v-if="$i != null" v-tooltip.noDelay.right="`${i18n.ts.account}: @${$i.username}`" class="_button" :class="[$style.account]" data-xtcymc-navbar-account @click="openAccountMenu">
+				<MkAvatar :user="$i" :class="$style.avatar" data-xtcymc-navbar-avatar style="view-transition-name: navbar-avatar;"/><MkAcct class="_nowrap" :class="$style.acct" :user="$i"/>
 			</button>
 		</div>
 	</div>
@@ -456,6 +456,7 @@ function menuEdit() {
 		position: sticky;
 		bottom: 0;
 		padding-top: 20px;
+		background: var(--MI_THEME-navBg);
 	}
 
 	.post {
@@ -463,9 +464,12 @@ function menuEdit() {
 		display: block;
 		width: 100%;
 		height: 40px;
+		line-height: 40px;
 		color: var(--MI_THEME-fgOnAccent);
 		font-weight: bold;
 		text-align: left;
+		white-space: nowrap;
+		overflow: clip;
 
 		&::before {
 			content: "";
@@ -499,14 +503,19 @@ function menuEdit() {
 	}
 
 	.postIcon {
+		display: inline-block;
 		position: relative;
 		margin-left: 30px;
 		margin-right: 8px;
 		width: 32px;
+		vertical-align: middle;
 	}
 
 	.postText {
+		display: inline-block;
 		position: relative;
+		vertical-align: middle;
+		white-space: nowrap;
 	}
 
 	.account {
@@ -518,6 +527,7 @@ function menuEdit() {
 		text-align: left;
 		box-sizing: border-box;
 		overflow: clip;
+		white-space: nowrap;
 
 		&:focus-visible {
 			outline: none;
@@ -540,7 +550,11 @@ function menuEdit() {
 	.acct {
 		display: block;
 		flex-shrink: 1;
+		min-width: 0;
 		padding-right: 8px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.divider {
@@ -671,6 +685,7 @@ function menuEdit() {
 		position: sticky;
 		bottom: 0;
 		padding-top: 20px;
+		background: var(--MI_THEME-navBg);
 	}
 
 	.widget {
