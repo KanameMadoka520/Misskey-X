@@ -4,7 +4,7 @@
  */
 
 import ms from 'ms';
-import { In } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { MAX_NOTE_TEXT_LENGTH } from '@/const.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
@@ -12,6 +12,11 @@ import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { NoteCreateService } from '@/core/NoteCreateService.js';
 import { IdentifiableError } from '@/misc/identifiable-error.js';
 import { CHANNEL_POST_PERMISSION_ERROR_ID } from '@/misc/channel-permissions.js';
+import type { UsersRepository } from '@/models/_.js';
+import { DI } from '@/di-symbols.js';
+import { RoleService } from '@/core/RoleService.js';
+import { ModerationLogService } from '@/core/ModerationLogService.js';
+import { IdService } from '@/core/IdService.js';
 import { ApiError } from '../../error.js';
 
 export const meta = {
@@ -130,6 +135,24 @@ export const meta = {
 			code: 'CONTAINS_TOO_MANY_MENTIONS',
 			id: '4de0363a-3046-481b-9b0f-feff3e211025',
 		},
+
+		cannotPostAsOtherUser: {
+			message: 'You are not allowed to post as another user.',
+			code: 'CANNOT_POST_AS_OTHER_USER',
+			id: '06980e2c-62cf-482c-8c44-baf539caa6a7',
+		},
+
+		noSuchTargetUser: {
+			message: 'The target local user does not exist or cannot be used for delegated posting.',
+			code: 'NO_SUCH_TARGET_USER',
+			id: 'ae2d3f7e-cb05-4706-9d68-0c6e57478df2',
+		},
+
+		invalidDelegatedCreatedAt: {
+			message: 'The delegated post time must be in the past, after the target account was created, and can only be used for an original note.',
+			code: 'INVALID_DELEGATED_CREATED_AT',
+			id: '88398bdf-c927-4cf5-aab3-8734f65cc721',
+		},
 	},
 } as const;
 
@@ -149,6 +172,8 @@ export const paramDef = {
 		replyId: { type: 'string', format: 'misskey:id', nullable: true },
 		renoteId: { type: 'string', format: 'misskey:id', nullable: true },
 		channelId: { type: 'string', format: 'misskey:id', nullable: true },
+		postAsUserId: { type: 'string', format: 'misskey:id', nullable: true },
+		createdAt: { type: 'integer', nullable: true },
 
 		// anyOf内にバリデーションを書いても最初の一つしかチェックされない
 		// See https://github.com/misskey-dev/misskey/pull/10082
@@ -223,13 +248,46 @@ export const paramDef = {
 @Injectable()
 export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-disable-line import/no-default-export
 	constructor(
+		@Inject(DI.usersRepository)
+		private usersRepository: UsersRepository,
+
 		private noteEntityService: NoteEntityService,
 		private noteCreateService: NoteCreateService,
+		private roleService: RoleService,
+		private moderationLogService: ModerationLogService,
+		private idService: IdService,
 	) {
 		super(meta, paramDef, async (ps, me) => {
 			try {
-				const note = await this.noteCreateService.fetchAndCreate(me, {
-					createdAt: new Date(),
+				let author = me;
+				let createdAt = new Date();
+				if (ps.postAsUserId != null || ps.createdAt != null) {
+					if (ps.postAsUserId == null || !(await this.roleService.getUserPolicies(me.id)).canPostAsOtherUser) {
+						throw new ApiError(meta.errors.cannotPostAsOtherUser);
+					}
+
+					const target = await this.usersRepository.findOneBy({
+						id: ps.postAsUserId,
+						host: IsNull(),
+						isSuspended: false,
+						isDeleted: false,
+					});
+					if (target == null || target.movedToUri != null) {
+						throw new ApiError(meta.errors.noSuchTargetUser);
+					}
+					author = target as typeof me;
+
+					if (ps.createdAt != null) {
+						const targetCreatedAt = this.idService.parse(target.id).date.getTime();
+						if (ps.createdAt > Date.now() || ps.createdAt < targetCreatedAt || ps.replyId != null || ps.renoteId != null) {
+							throw new ApiError(meta.errors.invalidDelegatedCreatedAt);
+						}
+						createdAt = new Date(ps.createdAt);
+					}
+				}
+
+				const note = await this.noteCreateService.fetchAndCreate(author, {
+					createdAt,
 					fileIds: ps.fileIds ?? ps.mediaIds ?? [],
 					poll: ps.poll ? {
 						choices: ps.poll.choices,
@@ -240,7 +298,7 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					replyId: ps.replyId ?? null,
 					renoteId: ps.renoteId ?? null,
 					cw: ps.cw ?? null,
-					localOnly: ps.localOnly,
+					localOnly: ps.postAsUserId != null ? true : ps.localOnly,
 					reactionAcceptance: ps.reactionAcceptance,
 					visibility: ps.visibility,
 					visibleUserIds: ps.visibleUserIds ?? [],
@@ -249,6 +307,19 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 					apHashtags: ps.noExtractHashtags ? [] : undefined,
 					apEmojis: ps.noExtractEmojis ? [] : undefined,
 				});
+
+				if (ps.postAsUserId != null) {
+					try {
+						await this.moderationLogService.log(me, 'createNoteAsOtherUser', {
+							noteId: note.id,
+							targetUserId: author.id,
+							targetUserUsername: author.username,
+							createdAt: this.idService.parse(note.id).date.toISOString(),
+						});
+					} catch (err) {
+						console.error(err);
+					}
+				}
 
 				return {
 					createdNote: await this.noteEntityService.pack(note, me),

@@ -170,6 +170,12 @@ type AdminDriveShowFileRequest = operations['admin___drive___show-file']['reques
 type AdminDriveShowFileResponse = operations['admin___drive___show-file']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type AdminEmailAuditListRequest = operations['admin___email-audit___list']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type AdminEmailAuditListResponse = operations['admin___email-audit___list']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type AdminEmojiAddAliasesBulkRequest = operations['admin___emoji___add-aliases-bulk']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
@@ -945,6 +951,9 @@ type ChannelsCreateResponse = operations['channels___create']['responses']['200'
 type ChannelsFavoriteRequest = operations['channels___favorite']['requestBody']['content']['application/json'];
 
 // @public (undocumented)
+type ChannelsFeaturedRequest = operations['channels___featured']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
 type ChannelsFeaturedResponse = operations['channels___featured']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
@@ -1003,6 +1012,12 @@ type ChannelsUpdateRequest = operations['channels___update']['requestBody']['con
 
 // @public (undocumented)
 type ChannelsUpdateResponse = operations['channels___update']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
+type ChannelsUsersRequest = operations['channels___users']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type ChannelsUsersResponse = operations['channels___users']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
 type ChartsActiveUsersRequest = operations['charts___active-users']['requestBody']['content']['application/json'];
@@ -1389,6 +1404,9 @@ type EmailAddressAvailableRequest = operations['email-address___available']['req
 type EmailAddressAvailableResponse = operations['email-address___available']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type EmailQuotaResponse = operations['email___quota']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 type EmojiAdded = {
     emoji: EmojiDetailed;
 };
@@ -1576,6 +1594,8 @@ declare namespace entities {
         AdminDriveFilesResponse,
         AdminDriveShowFileRequest,
         AdminDriveShowFileResponse,
+        AdminEmailAuditListRequest,
+        AdminEmailAuditListResponse,
         AdminEmojiAddRequest,
         AdminEmojiAddResponse,
         AdminEmojiAddAliasesBulkRequest,
@@ -1714,6 +1734,7 @@ declare namespace entities {
         ChannelsCreateRequest,
         ChannelsCreateResponse,
         ChannelsFavoriteRequest,
+        ChannelsFeaturedRequest,
         ChannelsFeaturedResponse,
         ChannelsFollowRequest,
         ChannelsFollowedRequest,
@@ -1734,6 +1755,8 @@ declare namespace entities {
         ChannelsUnfollowRequest,
         ChannelsUpdateRequest,
         ChannelsUpdateResponse,
+        ChannelsUsersRequest,
+        ChannelsUsersResponse,
         ChartsActiveUsersRequest,
         ChartsActiveUsersResponse,
         ChartsApRequestRequest,
@@ -1851,6 +1874,7 @@ declare namespace entities {
         DriveStreamResponse,
         EmailAddressAvailableRequest,
         EmailAddressAvailableResponse,
+        EmailQuotaResponse,
         EmojiRequest,
         EmojiResponse,
         EmojisResponse,
@@ -2084,6 +2108,8 @@ declare namespace entities {
         NotesUnrenoteRequest,
         NotesUserListTimelineRequest,
         NotesUserListTimelineResponse,
+        NotesWaterfallRequest,
+        NotesWaterfallResponse,
         NotificationsCreateRequest,
         PagePushRequest,
         PagesCreateRequest,
@@ -2935,6 +2961,12 @@ type ModerationLog = {
     type: 'deleteNote';
     info: ModerationLogPayloads['deleteNote'];
 } | {
+    type: 'createNoteAsOtherUser';
+    info: ModerationLogPayloads['createNoteAsOtherUser'];
+} | {
+    type: 'createDriveFileAsOtherUser';
+    info: ModerationLogPayloads['createDriveFileAsOtherUser'];
+} | {
     type: 'createGlobalAnnouncement';
     info: ModerationLogPayloads['createGlobalAnnouncement'];
 } | {
@@ -3045,7 +3077,7 @@ type ModerationLog = {
 });
 
 // @public (undocumented)
-export const moderationLogTypes: readonly ["updateServerSettings", "suspend", "unsuspend", "updateUserNote", "addCustomEmoji", "updateCustomEmoji", "deleteCustomEmoji", "assignRole", "unassignRole", "createRole", "updateRole", "deleteRole", "clearQueue", "promoteQueue", "deleteDriveFile", "deleteNote", "createGlobalAnnouncement", "createUserAnnouncement", "updateGlobalAnnouncement", "updateUserAnnouncement", "deleteGlobalAnnouncement", "deleteUserAnnouncement", "resetPassword", "suspendRemoteInstance", "unsuspendRemoteInstance", "updateRemoteInstanceNote", "markSensitiveDriveFile", "unmarkSensitiveDriveFile", "resolveAbuseReport", "forwardAbuseReport", "updateAbuseReportNote", "createInvitation", "createAd", "updateAd", "deleteAd", "createAvatarDecoration", "updateAvatarDecoration", "deleteAvatarDecoration", "unsetUserAvatar", "unsetUserBanner", "createSystemWebhook", "updateSystemWebhook", "deleteSystemWebhook", "createAbuseReportNotificationRecipient", "updateAbuseReportNotificationRecipient", "deleteAbuseReportNotificationRecipient", "deleteAccount", "deletePage", "deleteFlash", "deleteGalleryPost", "deleteChatRoom", "updateProxyAccountDescription"];
+export const moderationLogTypes: readonly ["updateServerSettings", "suspend", "unsuspend", "updateUserNote", "addCustomEmoji", "updateCustomEmoji", "deleteCustomEmoji", "assignRole", "unassignRole", "createRole", "updateRole", "deleteRole", "clearQueue", "promoteQueue", "deleteDriveFile", "deleteNote", "createNoteAsOtherUser", "createDriveFileAsOtherUser", "createGlobalAnnouncement", "createUserAnnouncement", "updateGlobalAnnouncement", "updateUserAnnouncement", "deleteGlobalAnnouncement", "deleteUserAnnouncement", "resetPassword", "suspendRemoteInstance", "unsuspendRemoteInstance", "updateRemoteInstanceNote", "markSensitiveDriveFile", "unmarkSensitiveDriveFile", "resolveAbuseReport", "forwardAbuseReport", "updateAbuseReportNote", "createInvitation", "createAd", "updateAd", "deleteAd", "createAvatarDecoration", "updateAvatarDecoration", "deleteAvatarDecoration", "unsetUserAvatar", "unsetUserBanner", "createSystemWebhook", "updateSystemWebhook", "deleteSystemWebhook", "createAbuseReportNotificationRecipient", "updateAbuseReportNotificationRecipient", "deleteAbuseReportNotificationRecipient", "deleteAccount", "deletePage", "deleteFlash", "deleteGalleryPost", "deleteChatRoom", "updateProxyAccountDescription"];
 
 // @public (undocumented)
 type MuteCreateRequest = operations['mute___create']['requestBody']['content']['application/json'];
@@ -3277,6 +3309,12 @@ type NotesUserListTimelineRequest = operations['notes___user-list-timeline']['re
 type NotesUserListTimelineResponse = operations['notes___user-list-timeline']['responses']['200']['content']['application/json'];
 
 // @public (undocumented)
+type NotesWaterfallRequest = operations['notes___waterfall']['requestBody']['content']['application/json'];
+
+// @public (undocumented)
+type NotesWaterfallResponse = operations['notes___waterfall']['responses']['200']['content']['application/json'];
+
+// @public (undocumented)
 export const noteVisibilities: readonly ["public", "home", "followers", "specified"];
 
 // @public (undocumented)
@@ -3501,7 +3539,7 @@ type RoleLite = components['schemas']['RoleLite'];
 type RolePolicies = components['schemas']['RolePolicies'];
 
 // @public (undocumented)
-export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable"];
+export const rolePolicies: readonly ["gtlAvailable", "ltlAvailable", "canPublicNote", "mentionLimit", "canInvite", "inviteLimit", "inviteLimitCycle", "inviteExpirationTime", "canManageCustomEmojis", "canManageAvatarDecorations", "canSearchNotes", "canSearchUsers", "canUseTranslator", "canHideAds", "canCreateChannel", "canPostAsOtherUser", "driveCapacityMb", "maxFileSizeMb", "alwaysMarkNsfw", "canUpdateBioMedia", "pinLimit", "antennaLimit", "wordMuteLimit", "webhookLimit", "clipLimit", "noteEachClipsLimit", "userListLimit", "userEachUserListsLimit", "rateLimitFactor", "avatarDecorationLimit", "canImportAntennas", "canImportBlocking", "canImportFollowing", "canImportMuting", "canImportUserLists", "chatAvailability", "uploadableFileTypes", "noteDraftLimit", "scheduledNoteLimit", "watermarkAvailable"];
 
 // @public (undocumented)
 type RolesListResponse = operations['roles___list']['responses']['200']['content']['application/json'];

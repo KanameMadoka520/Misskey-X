@@ -67,6 +67,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'updateUserAnnouncement'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'deleteUserAnnouncement'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'deleteNote'">: @{{ log.info.noteUserUsername }}{{ log.info.noteUserHost ? '@' + log.info.noteUserHost : '' }}</span>
+		<span v-else-if="log.type === 'createNoteAsOtherUser'">: @{{ log.info.targetUserUsername }}</span>
+		<span v-else-if="log.type === 'createDriveFileAsOtherUser'">: @{{ log.info.targetUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteDriveFile'">: @{{ log.info.fileUserUsername }}{{ log.info.fileUserHost ? '@' + log.info.fileUserHost : '' }}</span>
 		<span v-else-if="log.type === 'createAvatarDecoration'">: {{ log.info.avatarDecoration.name }}</span>
 		<span v-else-if="log.type === 'updateAvatarDecoration'">: {{ log.info.before.name }}</span>
@@ -108,6 +110,8 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'updateUserAnnouncement'" class="ti ti-pencil"></i>
 		<i v-else-if="log.type === 'deleteUserAnnouncement'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'deleteNote'" class="ti ti-trash"></i>
+		<i v-else-if="log.type === 'createNoteAsOtherUser'" class="ti ti-user-share"></i>
+		<i v-else-if="log.type === 'createDriveFileAsOtherUser'" class="ti ti-cloud-upload"></i>
 		<i v-else-if="log.type === 'deleteDriveFile'" class="ti ti-trash"></i>
 		<i v-else-if="log.type === 'createAd'" class="ti ti-plus"></i>
 		<i v-else-if="log.type === 'updateAd'" class="ti ti-pencil"></i>
@@ -147,6 +151,15 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div :class="$style.diff">
 				<CodeDiff :context="5" :hideHeader="true" :oldString="log.info.before ?? ''" :newString="log.info.after ?? ''" maxHeight="300px"/>
 			</div>
+		</template>
+		<template v-else-if="log.type === 'createNoteAsOtherUser'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.targetUserId}`" class="_link">@{{ log.info.targetUserUsername }}</MkA></div>
+			<div>{{ i18n.ts.note }}: <MkA :to="`/notes/${log.info.noteId}`" class="_link">{{ log.info.noteId }}</MkA></div>
+			<div>{{ i18n.ts.dateAndTime }}: <MkTime :time="log.info.createdAt" mode="detail"/></div>
+		</template>
+		<template v-else-if="log.type === 'createDriveFileAsOtherUser'">
+			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.targetUserId}`" class="_link">@{{ log.info.targetUserUsername }}</MkA></div>
+			<div>{{ i18n.ts.file }} ID: {{ log.info.fileId }}</div>
 		</template>
 		<template v-else-if="log.type === 'suspend'">
 			<div>{{ i18n.ts.user }}: <MkA :to="`/admin/user/${log.info.userId}`" class="_link">@{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</MkA></div>

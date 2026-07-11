@@ -133,6 +133,10 @@ export interface Locale extends ILocale {
      */
     "timeline": string;
     /**
+     * ノートウォーターフォール
+     */
+    "noteWaterfall": string;
+    /**
      * コミュニティ更新履歴
      */
     "communityChangelog": string;
@@ -284,6 +288,64 @@ export interface Locale extends ILocale {
      * ユーザーのノートを検索
      */
     "searchThisUsersNotes": string;
+    "_noteWaterfall": {
+        /**
+         * 並び方
+         */
+        "order": string;
+        /**
+         * ランダム
+         */
+        "random": string;
+        /**
+         * 新しい順
+         */
+        "recent": string;
+        /**
+         * 画像フィルター
+         */
+        "image": string;
+        /**
+         * 画像あり
+         */
+        "withImage": string;
+        /**
+         * 画像なし
+         */
+        "withoutImage": string;
+        /**
+         * 投稿者との関係
+         */
+        "authorRelation": string;
+        /**
+         * フォロー中
+         */
+        "following": string;
+        /**
+         * 未フォロー
+         */
+        "unfollowed": string;
+        /**
+         * ユーザーで絞り込む
+         */
+        "selectUser": string;
+        /**
+         * もう一度シャッフル
+         */
+        "reshuffle": string;
+        /**
+         * 表示列数
+         */
+        "columns": string;
+        /**
+         * 2列
+         */
+        "twoColumns": string;
+        /**
+         * 3列
+         */
+        "threeColumns": string;
+    };
     /**
      * 返信
      */
@@ -8218,6 +8280,14 @@ export interface Locale extends ILocale {
              */
             "canCreateChannel": string;
             /**
+             * 他のユーザーの代理投稿を許可
+             */
+            "canPostAsOtherUser": string;
+            /**
+             * このロールのユーザーが投稿フォームでローカルユーザーを選び、そのユーザーとして投稿し、添付ファイルを対象ユーザーのドライブへアップロードできるようにします。すべての操作はモデレーションログに記録されます。
+             */
+            "canPostAsOtherUser_description": string;
+            /**
              * アイコンデコレーションの最大取付個数
              */
             "avatarDecorationLimit": string;
@@ -10309,6 +10379,42 @@ export interface Locale extends ILocale {
          */
         "uploaderTip": string;
         /**
+         * 他のユーザーとして代理投稿
+         */
+        "postAsOtherUser": string;
+        /**
+         * 代理投稿先：
+         */
+        "postingAs": string;
+        /**
+         * 代理投稿先を変更
+         */
+        "changeDelegatedUser": string;
+        /**
+         * 代理投稿先を変更すると、現在の添付ファイルはクリアされます。続行しますか？
+         */
+        "changeDelegatedUserClearsFiles": string;
+        /**
+         * ノートの表示日時を設定
+         */
+        "setOriginalPostTime": string;
+        /**
+         * ノート日時
+         */
+        "originalPostTime": string;
+        /**
+         * 現在時刻で投稿
+         */
+        "postNow": string;
+        /**
+         * 過去の日時は通常の新規ノートにのみ使用でき、返信やリノートには使用できません。
+         */
+        "originalPostTimeOnlyForOriginal": string;
+        /**
+         * ノート日時は現在より前で、代理投稿先アカウントの作成日時より後である必要があります。
+         */
+        "invalidOriginalPostTime": string;
+        /**
          * このノートに返信...
          */
         "replyPlaceholder": string;
@@ -11522,6 +11628,14 @@ export interface Locale extends ILocale {
          * ノートを削除
          */
         "deleteNote": string;
+        /**
+         * 他のユーザーとして代理投稿
+         */
+        "createNoteAsOtherUser": string;
+        /**
+         * 他のユーザーのドライブへファイルをアップロード
+         */
+        "createDriveFileAsOtherUser": string;
         /**
          * 全体のお知らせを作成
          */

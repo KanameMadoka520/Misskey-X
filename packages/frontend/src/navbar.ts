@@ -59,6 +59,12 @@ export const navbarItemDef = reactive<{
 		icon: 'ti ti-hash',
 		to: '/explore',
 	},
+	noteWaterfall: {
+		title: i18n.ts.noteWaterfall,
+		icon: 'ti ti-layout-columns',
+		show: computed(() => $i != null),
+		to: '/note-waterfall',
+	},
 	announcements: {
 		title: i18n.ts.announcements,
 		icon: 'ti ti-speakerphone',

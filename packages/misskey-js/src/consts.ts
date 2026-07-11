@@ -152,6 +152,8 @@ export const moderationLogTypes = [
 	'promoteQueue',
 	'deleteDriveFile',
 	'deleteNote',
+	'createNoteAsOtherUser',
+	'createDriveFileAsOtherUser',
 	'createGlobalAnnouncement',
 	'createUserAnnouncement',
 	'updateGlobalAnnouncement',
@@ -206,6 +208,7 @@ export const rolePolicies = [
 	'canUseTranslator',
 	'canHideAds',
 	'canCreateChannel',
+	'canPostAsOtherUser',
 	'driveCapacityMb',
 	'maxFileSizeMb',
 	'alwaysMarkNsfw',
@@ -350,6 +353,17 @@ export type ModerationLogPayloads = {
 		noteUserUsername: string;
 		noteUserHost: string | null;
 		note: Note;
+	};
+	createNoteAsOtherUser: {
+		noteId: string;
+		targetUserId: string;
+		targetUserUsername: string;
+		createdAt: string;
+	};
+	createDriveFileAsOtherUser: {
+		fileId: string;
+		targetUserId: string;
+		targetUserUsername: string;
 	};
 	createGlobalAnnouncement: {
 		announcementId: string;

@@ -249,6 +249,10 @@ export const ROUTE_DEF = [{
 	component: page(() => import('@/pages/explore.vue')),
 	hash: 'initialTab',
 }, {
+	path: '/note-waterfall',
+	component: page(() => import('@/pages/note-waterfall.vue')),
+	loginRequired: true,
+}, {
 	path: '/search',
 	component: page(() => import('@/pages/search.vue')),
 	query: {

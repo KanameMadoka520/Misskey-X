@@ -104,6 +104,12 @@ export type ModerationLog = {
 	type: 'deleteNote';
 	info: ModerationLogPayloads['deleteNote'];
 } | {
+	type: 'createNoteAsOtherUser';
+	info: ModerationLogPayloads['createNoteAsOtherUser'];
+} | {
+	type: 'createDriveFileAsOtherUser';
+	info: ModerationLogPayloads['createDriveFileAsOtherUser'];
+} | {
 	type: 'createGlobalAnnouncement';
 	info: ModerationLogPayloads['createGlobalAnnouncement'];
 } | {

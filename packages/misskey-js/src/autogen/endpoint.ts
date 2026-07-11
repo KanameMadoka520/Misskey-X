@@ -43,6 +43,8 @@ import type {
 	AdminDriveFilesResponse,
 	AdminDriveShowFileRequest,
 	AdminDriveShowFileResponse,
+	AdminEmailAuditListRequest,
+	AdminEmailAuditListResponse,
 	AdminEmojiAddRequest,
 	AdminEmojiAddResponse,
 	AdminEmojiAddAliasesBulkRequest,
@@ -181,6 +183,7 @@ import type {
 	ChannelsCreateRequest,
 	ChannelsCreateResponse,
 	ChannelsFavoriteRequest,
+	ChannelsFeaturedRequest,
 	ChannelsFeaturedResponse,
 	ChannelsFollowRequest,
 	ChannelsFollowedRequest,
@@ -201,6 +204,8 @@ import type {
 	ChannelsUnfollowRequest,
 	ChannelsUpdateRequest,
 	ChannelsUpdateResponse,
+	ChannelsUsersRequest,
+	ChannelsUsersResponse,
 	ChartsActiveUsersRequest,
 	ChartsActiveUsersResponse,
 	ChartsApRequestRequest,
@@ -318,6 +323,7 @@ import type {
 	DriveStreamResponse,
 	EmailAddressAvailableRequest,
 	EmailAddressAvailableResponse,
+	EmailQuotaResponse,
 	EmojiRequest,
 	EmojiResponse,
 	EmojisResponse,
@@ -553,6 +559,8 @@ import type {
 	NotesUnrenoteRequest,
 	NotesUserListTimelineRequest,
 	NotesUserListTimelineResponse,
+	NotesWaterfallRequest,
+	NotesWaterfallResponse,
 	NotificationsCreateRequest,
 	PagePushRequest,
 	PagesCreateRequest,
@@ -696,6 +704,8 @@ export type Endpoints = {
 	'admin/drive/cleanup': { req: EmptyRequest; res: EmptyResponse };
 	'admin/drive/files': { req: AdminDriveFilesRequest; res: AdminDriveFilesResponse };
 	'admin/drive/show-file': { req: AdminDriveShowFileRequest; res: AdminDriveShowFileResponse };
+	'admin/email-audit/clear': { req: EmptyRequest; res: EmptyResponse };
+	'admin/email-audit/list': { req: AdminEmailAuditListRequest; res: AdminEmailAuditListResponse };
 	'admin/emoji/add': { req: AdminEmojiAddRequest; res: AdminEmojiAddResponse };
 	'admin/emoji/add-aliases-bulk': { req: AdminEmojiAddAliasesBulkRequest; res: EmptyResponse };
 	'admin/emoji/copy': { req: AdminEmojiCopyRequest; res: AdminEmojiCopyResponse };
@@ -792,7 +802,7 @@ export type Endpoints = {
 	'bubble-game/register': { req: BubbleGameRegisterRequest; res: EmptyResponse };
 	'channels/create': { req: ChannelsCreateRequest; res: ChannelsCreateResponse };
 	'channels/favorite': { req: ChannelsFavoriteRequest; res: EmptyResponse };
-	'channels/featured': { req: EmptyRequest; res: ChannelsFeaturedResponse };
+	'channels/featured': { req: ChannelsFeaturedRequest; res: ChannelsFeaturedResponse };
 	'channels/follow': { req: ChannelsFollowRequest; res: EmptyResponse };
 	'channels/followed': { req: ChannelsFollowedRequest; res: ChannelsFollowedResponse };
 	'channels/mute/create': { req: ChannelsMuteCreateRequest; res: EmptyResponse };
@@ -806,6 +816,7 @@ export type Endpoints = {
 	'channels/unfavorite': { req: ChannelsUnfavoriteRequest; res: EmptyResponse };
 	'channels/unfollow': { req: ChannelsUnfollowRequest; res: EmptyResponse };
 	'channels/update': { req: ChannelsUpdateRequest; res: ChannelsUpdateResponse };
+	'channels/users': { req: ChannelsUsersRequest; res: ChannelsUsersResponse };
 	'charts/active-users': { req: ChartsActiveUsersRequest; res: ChartsActiveUsersResponse };
 	'charts/ap-request': { req: ChartsApRequestRequest; res: ChartsApRequestResponse };
 	'charts/drive': { req: ChartsDriveRequest; res: ChartsDriveResponse };
@@ -875,6 +886,7 @@ export type Endpoints = {
 	'drive/folders/update': { req: DriveFoldersUpdateRequest; res: DriveFoldersUpdateResponse };
 	'drive/stream': { req: DriveStreamRequest; res: DriveStreamResponse };
 	'email-address/available': { req: EmailAddressAvailableRequest; res: EmailAddressAvailableResponse };
+	'email/quota': { req: EmptyRequest; res: EmailQuotaResponse };
 	'emoji': { req: EmojiRequest; res: EmojiResponse };
 	'emojis': { req: EmptyRequest; res: EmojisResponse };
 	'endpoint': { req: EndpointRequest; res: EndpointResponse };
@@ -1029,6 +1041,7 @@ export type Endpoints = {
 	'notes/translate': { req: NotesTranslateRequest; res: NotesTranslateResponse };
 	'notes/unrenote': { req: NotesUnrenoteRequest; res: EmptyResponse };
 	'notes/user-list-timeline': { req: NotesUserListTimelineRequest; res: NotesUserListTimelineResponse };
+	'notes/waterfall': { req: NotesWaterfallRequest; res: NotesWaterfallResponse };
 	'notifications/create': { req: NotificationsCreateRequest; res: EmptyResponse };
 	'notifications/flush': { req: EmptyRequest; res: EmptyResponse };
 	'notifications/mark-all-as-read': { req: EmptyRequest; res: EmptyResponse };

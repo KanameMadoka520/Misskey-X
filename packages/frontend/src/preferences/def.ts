@@ -205,6 +205,7 @@ export const PREF_DEF = definePreferences({
 			'chat',
 			'-',
 			'explore',
+			'noteWaterfall',
 			'announcements',
 			'channels',
 			'search',

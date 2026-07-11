@@ -112,6 +112,7 @@ export function useUploader(options: {
 	folderId?: string | null;
 	multiple?: boolean;
 	features?: UploaderFeatures;
+	postAsUserId?: () => string | null;
 } = {}) {
 	const $i = ensureSignin();
 
@@ -507,11 +508,13 @@ export function useUploader(options: {
 		item.uploadFailed = false;
 		item.uploading = true;
 
+		const postAsUserId = options.postAsUserId?.() ?? null;
 		const { filePromise, abort } = uploadFile(item.preprocessedFile ?? item.file, {
 			name: getUploadName(item),
-			folderId: options.folderId === undefined ? prefer.s.uploadFolder : options.folderId,
+			folderId: postAsUserId == null ? (options.folderId === undefined ? prefer.s.uploadFolder : options.folderId) : null,
 			isSensitive: item.isSensitive ?? false,
 			caption: item.caption ?? null,
+			postAsUserId,
 			onProgress: (progress) => {
 				if (item.progress == null) {
 					item.progress = { max: progress.total, value: progress.loaded };
@@ -785,4 +788,3 @@ export function useUploader(options: {
 		events,
 	};
 }
-

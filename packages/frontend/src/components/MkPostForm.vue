@@ -15,7 +15,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<div :class="$style.headerLeft">
 			<button v-if="!fixed" :class="$style.cancel" class="_button" @click="cancel"><i class="ti ti-x"></i></button>
 			<button ref="accountMenuEl" v-click-anime v-tooltip="i18n.ts.account" class="_button" @click="openAccountMenu">
-				<img :class="$style.avatar" :src="(postAccount ?? $i).avatarUrl" style="border-radius: 100%;"/>
+				<img :class="$style.avatar" :src="(delegatedUser ?? postAccount ?? $i).avatarUrl" style="border-radius: 100%;"/>
 			</button>
 		</div>
 		<div :class="$style.headerRight">
@@ -32,7 +32,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<span :class="$style.headerRightButtonText">{{ targetChannel.name }}</span>
 				</button>
 			</template>
-			<button v-if="visibility !== 'specified'" v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="targetChannel != null" @click="toggleLocalOnly">
+			<button v-if="visibility !== 'specified'" v-tooltip="i18n.ts._visibility.disableFederation" class="_button" :class="[$style.headerRightItem, { [$style.danger]: localOnly }]" :disabled="targetChannel != null || delegatedUser != null" @click="toggleLocalOnly">
 				<span v-if="!localOnly"><i class="ti ti-rocket"></i></span>
 				<span v-else><i class="ti ti-rocket-off"></i></span>
 			</button>
@@ -70,6 +70,22 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</template>
 		</I18n> - <button class="_textButton" @click="cancelSchedule()">{{ i18n.ts.cancel }}</button>
 	</MkInfo>
+	<div v-if="delegatedUser" :class="$style.delegatedPost">
+		<MkAvatar :class="$style.delegatedAvatar" :user="delegatedUser"/>
+		<div :class="$style.delegatedBody">
+			<div><b>{{ i18n.ts._postForm.postingAs }}</b> <MkAcct :user="delegatedUser"/></div>
+			<div :class="$style.delegatedMeta">
+				<i class="ti ti-calendar-time"></i>
+				<template v-if="delegatedCreatedAt">{{ i18n.ts._postForm.originalPostTime }}: <MkTime :time="delegatedCreatedAt" mode="detail"/></template>
+				<template v-else>{{ i18n.ts._postForm.postNow }}</template>
+			</div>
+		</div>
+		<div :class="$style.delegatedActions">
+			<button v-tooltip="i18n.ts._postForm.changeDelegatedUser" class="_button" :class="$style.delegatedAction" @click="selectDelegatedUser"><i class="ti ti-user-search"></i></button>
+			<button v-tooltip="i18n.ts._postForm.setOriginalPostTime" class="_button" :class="$style.delegatedAction" @click="setDelegatedCreatedAt"><i class="ti ti-clock-edit"></i></button>
+			<button v-tooltip="i18n.ts.cancel" class="_button" :class="$style.delegatedAction" @click="clearDelegation"><i class="ti ti-x"></i></button>
+		</div>
+	</div>
 	<MkInfo v-if="hasNotSpecifiedMentions" warn :class="$style.hasNotSpecifiedMentions">{{ i18n.ts.notSpecifiedMentionWarning }} - <button class="_textButton" @click="addMissingMention()">{{ i18n.ts.add }}</button></MkInfo>
 	<div v-show="useCw" :class="$style.cwOuter">
 		<input ref="cwInputEl" v-model="cw" :class="$style.cw" :placeholder="i18n.ts.annotation" @keydown="onKeydown" @keyup="onKeyup" @compositionend="onCompositionEnd">
@@ -89,17 +105,18 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<MkUploaderItems :items="uploader.items.value" @showMenu="(item, ev) => showPerUploadItemMenu(item, ev)" @showMenuViaContextmenu="(item, ev) => showPerUploadItemMenuViaContextmenu(item, ev)"/>
 	</div>
 	<MkPollEditor v-if="poll" v-model="poll" @destroyed="poll = null"/>
-	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="postAccount ?? $i"/>
+	<MkNotePreview v-if="showPreview" :class="$style.preview" :text="text" :files="files" :poll="poll ?? undefined" :useCw="useCw" :cw="cw" :user="delegatedUser ?? postAccount ?? $i"/>
 	<div v-if="showingOptions" style="padding: 8px 16px;">
 	</div>
 	<footer ref="footerEl" :class="$style.footer">
 		<div :class="$style.footerLeft">
 			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.upload + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromPc"><i class="ti ti-photo-plus"></i></button>
-			<button v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
+			<button v-if="delegatedUser == null" v-tooltip="i18n.ts.attachFile + ' (' + i18n.ts.fromDrive + ')'" class="_button" :class="$style.footerButton" @click="chooseFileFromDrive"><i class="ti ti-cloud-download"></i></button>
 			<button v-tooltip="i18n.ts.poll" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: poll }]" @click="togglePoll"><i class="ti ti-chart-arrows"></i></button>
 			<button v-tooltip="i18n.ts.useCw" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: useCw }]" @click="useCw = !useCw"><i class="ti ti-eye-off"></i></button>
 			<button v-tooltip="i18n.ts.hashtags" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: withHashtags }]" @click="withHashtags = !withHashtags"><i class="ti ti-hash"></i></button>
 			<button v-tooltip="i18n.ts.mention" class="_button" :class="$style.footerButton" @click="insertMention"><i class="ti ti-at"></i></button>
+			<button v-if="$i.policies.canPostAsOtherUser && postAccount == null" v-tooltip="i18n.ts._postForm.postAsOtherUser" class="_button" :class="[$style.footerButton, { [$style.footerButtonActive]: delegatedUser != null }]" @click="selectDelegatedUser"><i class="ti ti-user-share"></i></button>
 			<button v-if="showAddMfmFunction" v-tooltip="i18n.ts.addMfmFunction" :class="['_button', $style.footerButton]" @click="insertMfmFunction"><i class="ti ti-palette"></i></button>
 			<button v-if="postFormActions.length > 0" v-tooltip="i18n.ts.plugins" class="_button" :class="$style.footerButton" @click="showActions"><i class="ti ti-plug"></i></button>
 		</div>
@@ -212,6 +229,9 @@ if (props.initialVisibleUsers) {
 }
 const reactionAcceptance = ref(store.s.reactionAcceptance);
 const scheduledAt = ref<number | null>(null);
+const delegatedUser = ref<Misskey.entities.UserDetailed | null>(null);
+const delegatedCreatedAt = ref<number | null>(null);
+let localOnlyBeforeDelegation: boolean | null = null;
 const draghover = ref(false);
 const quoteId = ref<string | null>(null);
 const hasNotSpecifiedMentions = ref(false);
@@ -233,6 +253,7 @@ let hashtagAutocomplete: Autocomplete | null = null;
 
 const uploader = useUploader({
 	multiple: true,
+	postAsUserId: () => delegatedUser.value?.id ?? null,
 });
 
 onUnmounted(() => {
@@ -330,7 +351,7 @@ const canPost = computed((): boolean => {
 
 // cannot save pure renote as draft
 const canSaveAsServerDraft = computed((): boolean => {
-	return canPost.value && (textLength.value > 0 || files.value.length > 0 || poll.value != null);
+	return delegatedUser.value == null && canPost.value && (textLength.value > 0 || files.value.length > 0 || poll.value != null);
 });
 
 const withHashtags = store.model('postFormWithHashtags');
@@ -662,7 +683,13 @@ function showOtherSettings() {
 			}
 			saveServerDraft();
 		},
-	}, ...($i.policies.scheduledNoteLimit > 0 ? [{
+	}, ...($i.policies.canPostAsOtherUser && postAccount.value == null ? [{
+		icon: 'ti ti-user-share',
+		text: delegatedUser.value == null ? i18n.ts._postForm.postAsOtherUser : i18n.ts._postForm.changeDelegatedUser,
+		action: () => {
+			selectDelegatedUser();
+		},
+	}] : []), ...($i.policies.scheduledNoteLimit > 0 && delegatedUser.value == null ? [{
 		icon: 'ti ti-calendar-time',
 		text: i18n.ts.schedulePost + '...',
 		action: () => {
@@ -708,6 +735,79 @@ function addVisibleUser() {
 	});
 }
 
+function discardAttachments() {
+	uploader.abortAll();
+	files.value = [];
+	for (const item of [...uploader.items.value]) {
+		uploader.removeItem(item);
+	}
+}
+
+async function selectDelegatedUser() {
+	if (!$i.policies.canPostAsOtherUser || postAccount.value != null) return;
+
+	const user = await os.selectUser({ includeSelf: false, localOnly: true });
+	if (delegatedUser.value?.id === user.id) return;
+
+	if (files.value.length > 0 || uploader.items.value.length > 0) {
+		const { canceled } = await os.confirm({
+			type: 'warning',
+			text: i18n.ts._postForm.changeDelegatedUserClearsFiles,
+		});
+		if (canceled) return;
+		discardAttachments();
+	}
+
+	if (localOnlyBeforeDelegation == null) {
+		localOnlyBeforeDelegation = localOnly.value;
+	}
+	delegatedUser.value = user;
+	delegatedCreatedAt.value = null;
+	scheduledAt.value = null;
+	localOnly.value = true;
+}
+
+async function setDelegatedCreatedAt() {
+	if (delegatedUser.value == null) return;
+	if (replyTargetNote.value != null || renoteTargetNote.value != null || quoteId.value != null) {
+		await os.alert({
+			type: 'warning',
+			text: i18n.ts._postForm.originalPostTimeOnlyForOriginal,
+		});
+		return;
+	}
+
+	const current = delegatedCreatedAt.value == null ? new Date() : new Date(delegatedCreatedAt.value);
+	const localDefault = new Date(current.getTime() - (current.getTimezoneOffset() * 60 * 1000)).toISOString().slice(0, 16);
+	const { canceled, result } = await os.inputDatetime({
+		title: i18n.ts._postForm.setOriginalPostTime,
+		default: localDefault,
+	});
+	if (canceled) return;
+
+	const time = result.getTime();
+	const accountCreatedAt = new Date(delegatedUser.value.createdAt).getTime();
+	if (time > Date.now() || time < accountCreatedAt) {
+		await os.alert({
+			type: 'error',
+			text: i18n.ts._postForm.invalidOriginalPostTime,
+		});
+		return;
+	}
+	delegatedCreatedAt.value = time;
+}
+
+function clearDelegation() {
+	if (delegatedUser.value == null) return;
+	discardAttachments();
+	delegatedUser.value = null;
+	delegatedCreatedAt.value = null;
+	if (localOnlyBeforeDelegation != null) {
+		localOnly.value = localOnlyBeforeDelegation;
+		localOnlyBeforeDelegation = null;
+	}
+}
+
 function removeVisibleUser(id: string) {
 	visibleUsers.value = visibleUsers.value.filter(u => u.id !== id);
 }
@@ -719,6 +819,7 @@ function clear() {
 	poll.value = null;
 	quoteId.value = null;
 	scheduledAt.value = null;
+	clearDelegation();
 }
 
 function onKeydown(ev: KeyboardEvent) {
@@ -880,7 +981,7 @@ type StoredDrafts = {
 };
 
 function saveDraft() {
-	if (props.instant || props.mock) return;
+	if (props.instant || props.mock || delegatedUser.value != null) return;
 
 	const draftsData = JSON.parse(miLocalStorage.getItem('drafts') ?? '{}') as StoredDrafts;
 
@@ -1030,6 +1131,8 @@ async function post(ev?: PointerEvent) {
 		visibility: visibility.value,
 		visibleUserIds: visibility.value === 'specified' ? visibleUsers.value.map(u => u.id) : undefined,
 		reactionAcceptance: reactionAcceptance.value,
+		postAsUserId: delegatedUser.value?.id,
+		createdAt: delegatedCreatedAt.value ?? undefined,
 	};
 
 	if (withHashtags.value && hashtags.value && hashtags.value.trim() !== '') {
@@ -1096,9 +1199,11 @@ async function post(ev?: PointerEvent) {
 			posting.value = false;
 			postAccount.value = null;
 
-			incNotesCount();
-			if (notesCount === 1) {
-				claimAchievement('notes1');
+			if (postData.postAsUserId == null) {
+				incNotesCount();
+				if (notesCount === 1) {
+					claimAchievement('notes1');
+				}
 			}
 
 			const text = postData.text ?? '';
@@ -1250,6 +1355,12 @@ function showActions(ev: PointerEvent) {
 
 const postAccount = ref<Misskey.entities.UserDetailed | null>(null);
 
+watch([replyTargetNote, renoteTargetNote, quoteId], () => {
+	if (replyTargetNote.value != null || renoteTargetNote.value != null || quoteId.value != null) {
+		delegatedCreatedAt.value = null;
+	}
+});
+
 async function openAccountMenu(ev: PointerEvent) {
 	if (props.mock) return;
 
@@ -1315,6 +1426,7 @@ async function openAccountMenu(ev: PointerEvent) {
 		includeCurrentAccount: true,
 		active: postAccount.value != null ? postAccount.value.id : $i.id,
 		onChoose: (account) => {
+			if (delegatedUser.value != null) clearDelegation();
 			if (account.id === $i.id) {
 				postAccount.value = null;
 			} else {
@@ -1695,6 +1807,62 @@ html[data-color-scheme=light] .preview {
 
 .scheduledAt {
 	margin: 0 20px 16px 20px;
+}
+
+.delegatedPost {
+	display: grid;
+	grid-template-columns: 40px minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 10px;
+	margin: 0 20px 16px;
+	padding: 10px 12px;
+	border: solid 1px var(--MI_THEME-accent);
+	border-radius: 8px;
+	background: color(from var(--MI_THEME-accent) srgb r g b / 0.08);
+}
+
+.delegatedAvatar {
+	width: 40px;
+	height: 40px;
+}
+
+.delegatedBody {
+	min-width: 0;
+}
+
+.delegatedMeta {
+	margin-top: 3px;
+	font-size: 85%;
+	opacity: 0.75;
+}
+
+.delegatedActions {
+	display: flex;
+	gap: 4px;
+}
+
+.delegatedAction {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 6px;
+}
+
+@media (max-width: 500px) {
+	.delegatedPost {
+		grid-template-columns: 36px minmax(0, 1fr);
+	}
+
+	.delegatedAvatar {
+		width: 36px;
+		height: 36px;
+	}
+
+	.delegatedActions {
+		grid-column: 1 / -1;
+		justify-content: flex-end;
+	}
 }
 
 .showHowToUse {
