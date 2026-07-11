@@ -76,7 +76,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<div><b>{{ i18n.ts._postForm.postingAs }}</b> <MkAcct :user="delegatedUser"/></div>
 			<div :class="$style.delegatedMeta">
 				<i class="ti ti-calendar-time"></i>
-				<template v-if="delegatedCreatedAt">{{ i18n.ts._postForm.originalPostTime }}: <MkTime :time="delegatedCreatedAt" mode="detail"/></template>
+				<template v-if="delegatedCreatedAt">{{ i18n.ts._postForm.originalPostTime }}: <MkTime :key="delegatedCreatedAt" :time="delegatedCreatedAt" mode="detail"/></template>
 				<template v-else>{{ i18n.ts._postForm.postNow }}</template>
 			</div>
 		</div>
