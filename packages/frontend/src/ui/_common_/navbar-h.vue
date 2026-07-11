@@ -65,6 +65,7 @@ import { getAccountMenu } from '@/accounts.js';
 import { $i } from '@/i.js';
 import { getHTMLElementOrNull } from '@/utility/get-dom-node-or-null.js';
 import { COMMUNITY_CHANGELOG_PATH, TANGCUYU_SERVER_UPDATES_PATH } from '@/custom-channels.js';
+import { normalizeNavbarMenu } from '@/utility/navbar-menu.js';
 
 const WINDOW_THRESHOLD = 1400;
 
@@ -73,7 +74,7 @@ const props = defineProps<{
 }>();
 
 const settingsWindowed = ref(window.innerWidth > WINDOW_THRESHOLD);
-const menu = ref(prefer.s.menu);
+const menu = computed(() => normalizeNavbarMenu(prefer.s.menu));
 // const menuDisplay = store.model('menuDisplay');
 const otherNavItemIndicated = computed<boolean>(() => {
 	for (const def in navbarItemDef) {

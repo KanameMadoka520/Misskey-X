@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 	<template #footer>
 		<div :class="$style.footer">
 			<div class="_spacer" style="--MI_SPACER-w: 600px; --MI_SPACER-min: 16px; --MI_SPACER-max: 16px;">
-				<MkButton primary rounded @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
+				<MkButton primary rounded :wait="saving" @click="save"><i class="ti ti-check"></i> {{ i18n.ts.save }}</MkButton>
 			</div>
 		</div>
 	</template>
@@ -44,6 +44,7 @@ type RoleLike = Pick<Misskey.entities.Role, 'name' | 'description' | 'isAdminist
 
 const role = ref<Misskey.entities.Role | null>(null);
 const data = ref<RoleLike | null>(null);
+const saving = ref(false);
 
 if (props.id) {
 	role.value = await misskeyApi('admin/roles/show', {
@@ -72,27 +73,33 @@ if (props.id) {
 }
 
 async function save() {
-	if (data.value === null) return;
-	rolesCache.delete();
-	if (role.value) {
-		os.apiWithDialog('admin/roles/update', {
-			roleId: role.value.id,
-			...data.value,
-		});
-		router.push('/admin/roles/:id', {
-			params: {
-				id: role.value.id,
-			},
-		});
-	} else {
-		const created = await os.apiWithDialog('admin/roles/create', {
-			...data.value,
-		});
-		router.push('/admin/roles/:id', {
-			params: {
-				id: created.id,
-			},
-		});
+	if (data.value === null || saving.value) return;
+	saving.value = true;
+	try {
+		if (role.value) {
+			await os.apiWithDialog('admin/roles/update', {
+				roleId: role.value.id,
+				...data.value,
+			});
+			rolesCache.delete();
+			await router.push('/admin/roles/:id', {
+				params: {
+					id: role.value.id,
+				},
+			});
+		} else {
+			const created = await os.apiWithDialog('admin/roles/create', {
+				...data.value,
+			});
+			rolesCache.delete();
+			await router.push('/admin/roles/:id', {
+				params: {
+					id: created.id,
+				},
+			});
+		}
+	} finally {
+		saving.value = false;
 	}
 }
 

@@ -326,6 +326,26 @@ export interface Locale extends ILocale {
          */
         "unfollowed": string;
         /**
+         * チャンネル投稿
+         */
+        "channelContent": string;
+        /**
+         * フォロー中のチャンネルのみ
+         */
+        "followedChannelsOnly": string;
+        /**
+         * すべてのチャンネルを表示
+         */
+        "allChannels": string;
+        /**
+         * フォロー中のチャンネルを除外
+         */
+        "excludeFollowedChannels": string;
+        /**
+         * チャンネル投稿を表示しない
+         */
+        "excludeAllChannels": string;
+        /**
          * ユーザーで絞り込む
          */
         "selectUser": string;
@@ -8144,6 +8164,14 @@ export interface Locale extends ILocale {
          * 優先度
          */
         "priority": string;
+        /**
+         * 同じユーザーに複数のロールがある場合、最も高い優先度の階層だけが使用され、同じ階層の設定はポリシーの種類に応じて統合されます。関連するロールが1つだけなら優先度による違いはありません。
+         */
+        "priorityDescription": string;
+        /**
+         * Misskey-X 独自設定
+         */
+        "misskeyXOnly": string;
         "_priority": {
             /**
              * 低
@@ -8287,6 +8315,10 @@ export interface Locale extends ILocale {
              * このロールのユーザーが投稿フォームでローカルユーザーを選び、そのユーザーとして投稿し、添付ファイルを対象ユーザーのドライブへアップロードできるようにします。すべての操作はモデレーションログに記録されます。
              */
             "canPostAsOtherUser_description": string;
+            /**
+             * この権限の優先度は、ユーザーに複数のロールがある場合の競合解決に使います。高があれば中と低を無視し、高がなければ中、低の順に採用します。有効な同一階層では、いずれかのロールが有効ならこの権限も有効になります。
+             */
+            "canPostAsOtherUser_priorityDescription": string;
             /**
              * アイコンデコレーションの最大取付個数
              */

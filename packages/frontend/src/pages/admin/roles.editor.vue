@@ -93,7 +93,6 @@ SPDX-License-Identifier: AGPL-3.0-only
 
 <script lang="ts" setup>
 import { watch, ref, computed } from 'vue';
-import { throttle } from 'throttle-debounce';
 import * as Misskey from 'misskey-js';
 import RolesEditorFormula from './RolesEditorFormula.vue';
 import type { MkSelectItem, GetMkSelectValueTypesFromDef } from '@/components/MkSelect.vue';
@@ -188,7 +187,7 @@ const rolePermission = computed<GetMkSelectValueTypesFromDef<typeof rolePermissi
 
 const q = ref('');
 
-const save = throttle(100, () => {
+function syncModelValue() {
 	const data = {
 		name: role.value.name,
 		description: role.value.description,
@@ -208,7 +207,7 @@ const save = throttle(100, () => {
 	};
 
 	emit('update:modelValue', data);
-});
+}
 
-watch(role, save, { deep: true });
+watch(role, syncModelValue, { deep: true, flush: 'sync' });
 </script>

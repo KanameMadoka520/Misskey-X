@@ -25,6 +25,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			</div>
 			<MkRange v-if="!isBaseRole && policyMeta != null" v-model="priorityModel" :min="0" :max="2" :step="1" easing :textConverter="priroityRangeTextConverter" :disabled="readonly">
 				<template #label>{{ i18n.ts._role.priority }}</template>
+				<template #caption><slot name="priorityDescription">{{ i18n.ts._role.priorityDescription }}</slot></template>
 			</MkRange>
 		</div>
 	</MkFolder>

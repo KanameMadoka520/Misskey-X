@@ -21,7 +21,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 						>
 							<button class="_button" :class="$style.itemHandle" tabindex="-1" :draggable="true" @dragstart.stop="dragStart"><i class="ti ti-menu"></i></button>
 							<i class="ti-fw" :class="[$style.itemIcon, navbarItemDef[item.type]?.icon]"></i><span :class="$style.itemText">{{ navbarItemDef[item.type]?.title ?? i18n.ts.divider }}</span>
-							<button class="_button" :class="$style.itemRemove" @click="removeItem(item.id)"><i class="ti ti-x"></i></button>
+							<button v-if="item.type !== 'noteWaterfall'" class="_button" :class="$style.itemRemove" @click="removeItem(item.id)"><i class="ti ti-x"></i></button>
 						</div>
 					</template>
 				</MkDraggable>
@@ -71,8 +71,9 @@ import { definePage } from '@/page.js';
 import { prefer } from '@/preferences.js';
 import { getInitialPrefValue } from '@/preferences/manager.js';
 import { genId } from '@/utility/id.js';
+import { normalizeNavbarMenu } from '@/utility/navbar-menu.js';
 
-const items = ref(prefer.s.menu.map(x => ({
+const items = ref(normalizeNavbarMenu(prefer.s.menu).map(x => ({
 	id: genId(),
 	type: x,
 })));
@@ -103,7 +104,12 @@ function removeItem(itemId: string) {
 }
 
 function save() {
-	prefer.commit('menu', itemTypeValues.value);
+	const normalized = normalizeNavbarMenu(itemTypeValues.value);
+	prefer.commit('menu', normalized);
+	items.value = normalized.map(type => ({
+		id: genId(),
+		type,
+	}));
 	os.success();
 }
 

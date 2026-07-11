@@ -172,7 +172,10 @@ SPDX-License-Identifier: AGPL-3.0-only
 		</XFolder>
 
 		<XFolder v-if="matchQuery([i18n.ts._role._options.canPostAsOtherUser, 'canPostAsOtherUser'])" v-model:policyMeta="policyMetaModel.canPostAsOtherUser" :isBaseRole="isBaseRole" :readonly="readonly">
-			<template #label>{{ i18n.ts._role._options.canPostAsOtherUser }}</template>
+			<template #label>
+				{{ i18n.ts._role._options.canPostAsOtherUser }}
+				<span :class="$style.misskeyXOnly">{{ i18n.ts._role.misskeyXOnly }}</span>
+			</template>
 			<template #valueText>{{ valuesModel.canPostAsOtherUser ? i18n.ts.yes : i18n.ts.no }}</template>
 			<template #default="{ disabled }">
 				<MkSwitch v-model="valuesModel.canPostAsOtherUser" :disabled="disabled">
@@ -180,6 +183,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<template #caption>{{ i18n.ts._role._options.canPostAsOtherUser_description }}</template>
 				</MkSwitch>
 			</template>
+			<template #priorityDescription>{{ i18n.ts._role._options.canPostAsOtherUser_priorityDescription }}</template>
 		</XFolder>
 
 		<XFolder v-if="matchQuery([i18n.ts._role._options.driveCapacity, 'driveCapacityMb'])" v-model:policyMeta="policyMetaModel.driveCapacityMb" :isBaseRole="isBaseRole" :readonly="readonly">
@@ -490,3 +494,18 @@ function updateAvatarDecorationLimit(value: string | number) {
 	avatarDecorationLimit.value = Number(value);
 }
 </script>
+
+<style lang="scss" module>
+.misskeyXOnly {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 1px 5px;
+	color: var(--MI_THEME-accent);
+	font-size: 0.72em;
+	font-weight: 700;
+	line-height: 1.4;
+	border: 1px solid var(--MI_THEME-accent);
+	border-radius: 4px;
+	vertical-align: 1px;
+}
+</style>

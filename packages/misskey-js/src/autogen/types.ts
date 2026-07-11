@@ -32341,6 +32341,11 @@ export interface operations {
                      * @enum {string}
                      */
                     relation?: 'all' | 'following' | 'unfollowed';
+                    /**
+                     * @default all
+                     * @enum {string}
+                     */
+                    channel?: 'all' | 'followed' | 'excludeFollowed' | 'none';
                     /** Format: misskey:id */
                     userId?: string | null;
                     seed?: string;

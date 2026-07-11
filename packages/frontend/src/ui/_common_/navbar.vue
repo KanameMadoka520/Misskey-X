@@ -28,7 +28,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 			<MkA v-tooltip.noDelay.right="i18n.ts.tangcuyuServerUpdates" class="_button" :class="$style.item" :activeClass="$style.active" :to="TANGCUYU_SERVER_UPDATES_PATH">
 				<i :class="$style.itemIcon" class="ti ti-fish ti-fw" style="view-transition-name: navbar-tangcuyuServerUpdates;"></i><span :class="$style.itemText">{{ i18n.ts.tangcuyuServerUpdates }}</span>
 			</MkA>
-			<template v-for="item in prefer.r.menu.value">
+			<template v-for="item in menu">
 				<div v-if="item === '-'" :class="$style.divider"></div>
 				<component
 					:is="navbarItemDef[item].to ? 'MkA' : 'button'"
@@ -123,6 +123,7 @@ import { prefer } from '@/preferences.js';
 import { getAccountMenu } from '@/accounts.js';
 import { $i } from '@/i.js';
 import { COMMUNITY_CHANGELOG_PATH, TANGCUYU_SERVER_UPDATES_PATH } from '@/custom-channels.js';
+import { normalizeNavbarMenu } from '@/utility/navbar-menu.js';
 
 const router = useRouter();
 
@@ -139,10 +140,11 @@ const forceIconOnly = ref(!props.asDrawer && window.innerWidth <= 1279);
 const iconOnly = computed(() => {
 	return !props.asDrawer && (forceIconOnly.value || (store.r.menuDisplay.value === 'sideIcon'));
 });
+const menu = computed(() => normalizeNavbarMenu(prefer.r.menu.value));
 
 const otherMenuItemIndicated = computed(() => {
 	for (const def in navbarItemDef) {
-		if (prefer.r.menu.value.includes(def)) continue;
+		if (menu.value.includes(def)) continue;
 		if (navbarItemDef[def].indicated) return true;
 	}
 	return false;

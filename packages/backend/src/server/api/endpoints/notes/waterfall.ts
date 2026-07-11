@@ -6,7 +6,7 @@
 import { createHash } from 'node:crypto';
 import { Brackets } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
-import type { FollowingsRepository, NotesRepository } from '@/models/_.js';
+import type { ChannelFollowingsRepository, FollowingsRepository, NotesRepository } from '@/models/_.js';
 import { Endpoint } from '@/server/api/endpoint-base.js';
 import { NoteEntityService } from '@/core/entities/NoteEntityService.js';
 import { QueryService } from '@/core/QueryService.js';
@@ -17,6 +17,7 @@ const RANDOM_CANDIDATE_LIMIT = 500;
 type WaterfallFilterParams = {
 	image: 'all' | 'with' | 'without';
 	relation: 'all' | 'following' | 'unfollowed';
+	channel: 'all' | 'followed' | 'excludeFollowed' | 'none';
 	userId?: string | null;
 };
 
@@ -43,6 +44,7 @@ export const paramDef = {
 		order: { type: 'string', enum: ['recent', 'random'], default: 'recent' },
 		image: { type: 'string', enum: ['all', 'with', 'without'], default: 'all' },
 		relation: { type: 'string', enum: ['all', 'following', 'unfollowed'], default: 'all' },
+		channel: { type: 'string', enum: ['all', 'followed', 'excludeFollowed', 'none'], default: 'all' },
 		userId: { type: 'string', format: 'misskey:id', nullable: true },
 		seed: { type: 'string', minLength: 1, maxLength: 64 },
 		offset: { type: 'integer', minimum: 0, maximum: RANDOM_CANDIDATE_LIMIT, default: 0 },
@@ -60,6 +62,9 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 
 		@Inject(DI.followingsRepository)
 		private followingsRepository: FollowingsRepository,
+
+		@Inject(DI.channelFollowingsRepository)
+		private channelFollowingsRepository: ChannelFollowingsRepository,
 
 		private noteEntityService: NoteEntityService,
 		private queryService: QueryService,
@@ -115,6 +120,24 @@ export default class extends Endpoint<typeof meta, typeof paramDef> { // eslint-
 				}));
 			}
 			query.setParameter('waterfallMeId', me.id);
+		}
+
+		if (ps.channel === 'none') {
+			query.andWhere('note.channelId IS NULL');
+		} else if (ps.channel !== 'all') {
+			const channelFollowingQuery = this.channelFollowingsRepository.createQueryBuilder('waterfallChannelFollowing')
+				.select('waterfallChannelFollowing.followeeId')
+				.where('waterfallChannelFollowing.followerId = :waterfallChannelMeId');
+
+			if (ps.channel === 'followed') {
+				query.andWhere(`note.channelId IN (${channelFollowingQuery.getQuery()})`);
+			} else {
+				query.andWhere(new Brackets(qb => {
+					qb.where('note.channelId IS NULL')
+						.orWhere(`note.channelId NOT IN (${channelFollowingQuery.getQuery()})`);
+				}));
+			}
+			query.setParameter('waterfallChannelMeId', me.id);
 		}
 
 		return query;

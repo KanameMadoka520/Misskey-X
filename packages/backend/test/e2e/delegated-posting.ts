@@ -128,6 +128,100 @@ describe('Delegated posting and note waterfall', () => {
 		assert.deepStrictEqual(firstRandom.body.map(note => note.id), secondRandom.body.map(note => note.id));
 	});
 
+	test('note waterfall supports followed, all, excluded-followed, and no-channel modes', async () => {
+		const followedChannelResponse = await api('channels/create', { name: 'waterfall-followed-channel' }, target);
+		const otherChannelResponse = await api('channels/create', { name: 'waterfall-other-channel' }, outsider);
+		assert.strictEqual(followedChannelResponse.status, 200);
+		assert.strictEqual(otherChannelResponse.status, 200);
+		const followedChannel = followedChannelResponse.body;
+		const otherChannel = otherChannelResponse.body;
+
+		const followResponse = await api('channels/follow', { channelId: followedChannel.id }, operator);
+		assert.strictEqual(followResponse.status, 204);
+
+		const plainNote = await post(target, { text: 'waterfall-plain-note' });
+		const followedChannelNote = await post(target, {
+			text: 'waterfall-followed-channel-note',
+			channelId: followedChannel.id,
+		});
+		const otherChannelNote = await post(outsider, {
+			text: 'waterfall-other-channel-note',
+			channelId: otherChannel.id,
+		});
+
+		const followedOnly = await api('notes/waterfall', {
+			order: 'recent',
+			channel: 'followed',
+			limit: 30,
+		}, operator);
+		assert.strictEqual(followedOnly.status, 200);
+		assert.ok(followedOnly.body.some(note => note.id === followedChannelNote.id));
+		assert.ok(!followedOnly.body.some(note => note.id === plainNote.id));
+		assert.ok(!followedOnly.body.some(note => note.id === otherChannelNote.id));
+
+		const allChannels = await api('notes/waterfall', {
+			order: 'recent',
+			channel: 'all',
+			limit: 30,
+		}, operator);
+		assert.strictEqual(allChannels.status, 200);
+		assert.ok(allChannels.body.some(note => note.id === plainNote.id));
+		assert.ok(allChannels.body.some(note => note.id === followedChannelNote.id));
+		assert.ok(allChannels.body.some(note => note.id === otherChannelNote.id));
+
+		const withoutFollowedChannels = await api('notes/waterfall', {
+			order: 'recent',
+			channel: 'excludeFollowed',
+			limit: 30,
+		}, operator);
+		assert.strictEqual(withoutFollowedChannels.status, 200);
+		assert.ok(withoutFollowedChannels.body.some(note => note.id === plainNote.id));
+		assert.ok(!withoutFollowedChannels.body.some(note => note.id === followedChannelNote.id));
+		assert.ok(withoutFollowedChannels.body.some(note => note.id === otherChannelNote.id));
+
+		const withoutChannels = await api('notes/waterfall', {
+			order: 'recent',
+			channel: 'none',
+			limit: 30,
+		}, operator);
+		assert.strictEqual(withoutChannels.status, 200);
+		assert.ok(withoutChannels.body.some(note => note.id === plainNote.id));
+		assert.ok(!withoutChannels.body.some(note => note.id === followedChannelNote.id));
+		assert.ok(!withoutChannels.body.some(note => note.id === otherChannelNote.id));
+	});
+
+	test('role updates persist the delegated posting policy', async () => {
+		const editableRole = await role(root, {
+			name: 'Delegated posting editable role',
+		}, {
+			canPostAsOtherUser: {
+				priority: 0,
+				useDefault: true,
+				value: false,
+			},
+		});
+		const update = await api('admin/roles/update', {
+			roleId: editableRole.id,
+			policies: {
+				...editableRole.policies,
+				canPostAsOtherUser: {
+					priority: 2,
+					useDefault: false,
+					value: true,
+				},
+			} as any,
+		}, root);
+		assert.strictEqual(update.status, 204);
+
+		const shown = await api('admin/roles/show', { roleId: editableRole.id }, root);
+		assert.strictEqual(shown.status, 200);
+		assert.deepStrictEqual(shown.body.policies.canPostAsOtherUser, {
+			priority: 2,
+			useDefault: false,
+			value: true,
+		});
+	});
+
 	test('users without the role policy cannot post or upload as another user', async () => {
 		const note = await api('notes/create', {
 			text: 'unauthorized delegated note',

@@ -18,6 +18,9 @@ SPDX-License-Identifier: AGPL-3.0-only
 					<MkSelect v-model="relation" :items="relationItems">
 						<template #label>{{ i18n.ts._noteWaterfall.authorRelation }}</template>
 					</MkSelect>
+					<MkSelect v-model="channel" :items="channelItems">
+						<template #label>{{ i18n.ts._noteWaterfall.channelContent }}</template>
+					</MkSelect>
 					<MkRadios v-model="columns" :options="columnItems">
 						<template #label>{{ i18n.ts._noteWaterfall.columns }}</template>
 					</MkRadios>
@@ -70,10 +73,12 @@ import { genId } from '@/utility/id.js';
 type WaterfallOrder = 'recent' | 'random';
 type WaterfallImage = 'all' | 'with' | 'without';
 type WaterfallRelation = 'all' | 'following' | 'unfollowed';
+type WaterfallChannel = 'all' | 'followed' | 'excludeFollowed' | 'none';
 
 const order = ref<WaterfallOrder>('random');
 const image = ref<WaterfallImage>('all');
 const relation = ref<WaterfallRelation>('all');
+const channel = ref<WaterfallChannel>('all');
 const columns = ref<2 | 3>(2);
 const selectedUser = ref<Misskey.entities.UserDetailed | null>(null);
 const seed = ref(genId());
@@ -93,6 +98,12 @@ const relationItems = computed(() => [
 	{ label: i18n.ts._noteWaterfall.following, value: 'following' as const },
 	{ label: i18n.ts._noteWaterfall.unfollowed, value: 'unfollowed' as const },
 ]);
+const channelItems = computed(() => [
+	{ label: i18n.ts._noteWaterfall.followedChannelsOnly, value: 'followed' as const },
+	{ label: i18n.ts._noteWaterfall.allChannels, value: 'all' as const },
+	{ label: i18n.ts._noteWaterfall.excludeFollowedChannels, value: 'excludeFollowed' as const },
+	{ label: i18n.ts._noteWaterfall.excludeAllChannels, value: 'none' as const },
+]);
 const columnItems = computed<MkRadiosOption<2 | 3>[]>(() => [
 	{ label: i18n.ts._noteWaterfall.twoColumns, value: 2 },
 	{ label: i18n.ts._noteWaterfall.threeColumns, value: 3 },
@@ -102,6 +113,7 @@ const params = computed(() => ({
 	order: order.value,
 	image: image.value,
 	relation: relation.value,
+	channel: channel.value,
 	userId: selectedUser.value?.id ?? null,
 	seed: seed.value,
 }));
@@ -121,7 +133,7 @@ function resetPaginator() {
 	paginatorKey.value++;
 }
 
-watch([order, image, relation, () => selectedUser.value?.id], ([newOrder], [oldOrder]) => {
+watch([order, image, relation, channel, () => selectedUser.value?.id], ([newOrder], [oldOrder]) => {
 	if (newOrder !== oldOrder) seed.value = genId();
 	resetPaginator();
 });
@@ -162,7 +174,7 @@ definePage(() => ({
 
 .filterGrid {
 	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 12px;
 }
 

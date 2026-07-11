@@ -185,6 +185,7 @@ export const store = markRaw(new Pizzax('base', {
 			'drive',
 			'followRequests',
 			'-',
+			'noteWaterfall',
 			'explore',
 			'announcements',
 			'search',
