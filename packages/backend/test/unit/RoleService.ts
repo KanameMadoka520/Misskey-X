@@ -6,6 +6,7 @@
 process.env.NODE_ENV = 'test';
 
 import { setTimeout } from 'node:timers/promises';
+import type { Config } from '@/config.js';
 import { describe, beforeEach, afterEach, test, expect, vi } from 'vitest';
 import type { Mocked } from 'vitest';
 import { mockDeep } from 'vitest-mock-extended';
@@ -41,6 +42,7 @@ describe('RoleService', () => {
 	let rolesRepository: RolesRepository;
 	let roleAssignmentsRepository: RoleAssignmentsRepository;
 	let meta: Mocked<MiMeta>;
+	let config: Config;
 	let notificationService: Mocked<NotificationService>;
 	let clock: lolex.Clock;
 
@@ -148,6 +150,8 @@ describe('RoleService', () => {
 		roleAssignmentsRepository = app.get<RoleAssignmentsRepository>(DI.roleAssignmentsRepository);
 
 		meta = app.get<MiMeta>(DI.meta) as Mocked<MiMeta>;
+		config = app.get<Config>(DI.config);
+		config.maxFileSize = 250 * 1024 * 1024;
 		notificationService = app.get<NotificationService>(NotificationService) as Mocked<NotificationService>;
 
 		await roleService.onModuleInit();
@@ -226,6 +230,55 @@ describe('RoleService', () => {
 	});
 
 	describe('getUserPolicies', () => {
+		test('base role max file size is capped by the server-wide limit', async () => {
+			const user = await createUser();
+			meta.policies = {
+				maxFileSizeMb: 500,
+			};
+
+			const result = await roleService.getUserPolicies(user.id);
+
+			expect(result.maxFileSizeMb).toBe(250);
+		});
+
+		test('assigned role max file size cannot exceed the server-wide limit', async () => {
+			const user = await createUser();
+			const role = await createRole({
+				name: 'large upload role',
+				policies: {
+					maxFileSizeMb: {
+						useDefault: false,
+						priority: 0,
+						value: 500,
+					},
+				},
+			});
+			await roleService.assign(user.id, role.id);
+
+			const result = await roleService.getUserPolicies(user.id);
+
+			expect(result.maxFileSizeMb).toBe(250);
+		});
+
+		test('assigned role may set a lower max file size than the server-wide limit', async () => {
+			const user = await createUser();
+			const role = await createRole({
+				name: 'restricted upload role',
+				policies: {
+					maxFileSizeMb: {
+						useDefault: false,
+						priority: 0,
+						value: 80,
+					},
+				},
+			});
+			await roleService.assign(user.id, role.id);
+
+			const result = await roleService.getUserPolicies(user.id);
+
+			expect(result.maxFileSizeMb).toBe(80);
+		});
+
 		test('instance default policies', async () => {
 			const user = await createUser();
 			meta.policies = {

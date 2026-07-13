@@ -203,6 +203,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				<MkInput v-model="valuesModel.maxFileSizeMb" type="number" :disabled="disabled">
 					<template #suffix>MB</template>
 					<template #caption>
+						<div>{{ i18n.tsx._role._options.maxFileSize_serverLimitCaption({ max: `${Math.floor(instance.maxFileSize / (1024 * 1024))} MB` }) }}</div>
 						<div><i class="ti ti-alert-triangle" style="color: var(--MI_THEME-warn);"></i> {{ i18n.ts._role._options.maxFileSize_caption }}</div>
 					</template>
 				</MkInput>
@@ -429,8 +430,9 @@ type PolicyMetaRecord = {
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { i18n } from '@/i18n.js';
 import XFolder from './roles.policy-editor.folder.vue';
+import { i18n } from '@/i18n.js';
+import { instance } from '@/instance.js';
 
 import MkInput from '@/components/MkInput.vue';
 import MkTextarea from '@/components/MkTextarea.vue';

@@ -2138,6 +2138,7 @@ _role:
     driveCapacity: "ドライブ容量"
     maxFileSize: "アップロード可能な最大ファイルサイズ"
     maxFileSize_caption: "リバースプロキシやCDNなど、前段で別の設定値が存在する場合があります。"
+    maxFileSize_serverLimitCaption: "サーバー全体のファイル単位のアップロード上限は {max} です。ロールではこれより小さい値を設定できますが、上限を超えることはできません。上限を引き上げるには Misskey の設定ファイルを変更してください。"
     alwaysMarkNsfw: "ファイルにNSFWを常に付与"
     canUpdateBioMedia: "アイコンとバナーの更新を許可"
     pinMax: "ノートのピン留めの最大数"

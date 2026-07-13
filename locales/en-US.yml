@@ -2108,6 +2108,7 @@ _role:
     driveCapacity: "Drive capacity"
     maxFileSize: "Upload-able max file size"
     maxFileSize_caption: "Reverse proxies, CDNs, and other front-end components may have their own configuration settings."
+    maxFileSize_serverLimitCaption: "The server-wide per-file upload limit is {max}. Roles may set a lower limit, but cannot exceed it. To raise the limit, update the Misskey configuration."
     alwaysMarkNsfw: "Always mark files as NSFW"
     canUpdateBioMedia: "Can edit an icon or a banner image"
     pinMax: "Maximum number of pinned notes"

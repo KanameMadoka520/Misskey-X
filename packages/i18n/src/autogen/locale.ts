@@ -8240,6 +8240,10 @@ export interface Locale extends ILocale {
              */
             "maxFileSize_caption": string;
             /**
+             * サーバー全体のファイル単位のアップロード上限は {max} です。ロールではこれより小さい値を設定できますが、上限を超えることはできません。上限を引き上げるには Misskey の設定ファイルを変更してください。
+             */
+            "maxFileSize_serverLimitCaption": ParameterizedString<"max">;
+            /**
              * ファイルにNSFWを常に付与
              */
             "alwaysMarkNsfw": string;

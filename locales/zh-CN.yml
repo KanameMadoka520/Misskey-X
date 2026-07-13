@@ -2108,6 +2108,7 @@ _role:
     driveCapacity: "网盘容量"
     maxFileSize: "可上传的最大文件大小"
     maxFileSize_caption: "可能在反向代理或 CDN 等前端存在其它设定值。"
+    maxFileSize_serverLimitCaption: "服务器全局的单文件上传上限为 {max}。角色可以设置更小的限制，但不能超过该值；如需提高上限，请修改 Misskey 配置文件。"
     alwaysMarkNsfw: "总是将文件标记为 NSFW"
     canUpdateBioMedia: "允许更新头像和横幅"
     pinMax: "帖子置顶数量限制"
