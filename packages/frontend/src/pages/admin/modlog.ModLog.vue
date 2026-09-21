@@ -22,6 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 				[$style.logYellow]: [
 					'markSensitiveDriveFile',
 					'resetPassword',
+					'unsetMfa',
 					'suspendRemoteInstance',
 				].includes(log.type),
 				[$style.logRed]: [
@@ -70,6 +71,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<span v-else-if="log.type === 'createNoteAsOtherUser'">: @{{ log.info.targetUserUsername }}</span>
 		<span v-else-if="log.type === 'createDriveFileAsOtherUser'">: @{{ log.info.targetUserUsername }}</span>
 		<span v-else-if="log.type === 'deleteDriveFile'">: @{{ log.info.fileUserUsername }}{{ log.info.fileUserHost ? '@' + log.info.fileUserHost : '' }}</span>
+		<span v-else-if="log.type === 'unsetMfa'">: @{{ log.info.userUsername }}{{ log.info.userHost ? '@' + log.info.userHost : '' }}</span>
 		<span v-else-if="log.type === 'createAvatarDecoration'">: {{ log.info.avatarDecoration.name }}</span>
 		<span v-else-if="log.type === 'updateAvatarDecoration'">: {{ log.info.before.name }}</span>
 		<span v-else-if="log.type === 'deleteAvatarDecoration'">: {{ log.info.avatarDecoration.name }}</span>
@@ -116,6 +118,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 		<i v-else-if="log.type === 'createAd'" class="ti ti-plus"></i>
 		<i v-else-if="log.type === 'updateAd'" class="ti ti-pencil"></i>
 		<i v-else-if="log.type === 'deleteAd'" class="ti ti-trash"></i>
+		<i v-else-if="log.type === 'unsetMfa'" class="ti ti-shield"></i>
 		<i v-else-if="log.type === 'createAvatarDecoration'" class="ti ti-plus"></i>
 		<i v-else-if="log.type === 'updateAvatarDecoration'" class="ti ti-pencil"></i>
 		<i v-else-if="log.type === 'deleteAvatarDecoration'" class="ti ti-trash"></i>
