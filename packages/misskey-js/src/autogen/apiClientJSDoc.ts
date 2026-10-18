@@ -329,7 +329,7 @@ declare module '../api.js' {
 
     /**
      * No description provided.
-     *
+     * 
      * **Credential required**: *Yes* / **Permission**: *write:admin:meta*
      */
     request<E extends 'admin/email-audit/clear', P extends Endpoints[E]['req']>(
@@ -340,7 +340,7 @@ declare module '../api.js' {
 
     /**
      * No description provided.
-     *
+     * 
      * **Credential required**: *Yes* / **Permission**: *read:admin:meta*
      */
     request<E extends 'admin/email-audit/list', P extends Endpoints[E]['req']>(
@@ -1580,7 +1580,7 @@ declare module '../api.js' {
 
     /**
      * No description provided.
-     *
+     * 
      * **Credential required**: *No*
      */
     request<E extends 'channels/users', P extends Endpoints[E]['req']>(
@@ -2350,7 +2350,7 @@ declare module '../api.js' {
 
     /**
      * No description provided.
-     *
+     * 
      * **Credential required**: *Yes* / **Permission**: *read:account*
      */
     request<E extends 'email/quota', P extends Endpoints[E]['req']>(
@@ -2473,7 +2473,7 @@ declare module '../api.js' {
     /**
      * No description provided.
      * 
-     * **Credential required**: *No*
+     * **Credential required**: *Yes* / **Permission**: *read:account*
      */
     request<E extends 'federation/update-remote-user', P extends Endpoints[E]['req']>(
       endpoint: E,
@@ -4089,7 +4089,7 @@ declare module '../api.js' {
 
     /**
      * No description provided.
-     *
+     * 
      * **Credential required**: *Yes* / **Permission**: *read:account*
      */
     request<E extends 'notes/waterfall', P extends Endpoints[E]['req']>(
