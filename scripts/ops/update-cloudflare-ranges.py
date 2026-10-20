@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh this site's origin allowlist; retain the working file on any failure."""
+"""Refresh origin and real-IP trust lists together; roll back failed updates."""
 
 import argparse
 import fcntl
@@ -12,7 +12,10 @@ import urllib.request
 
 
 TARGET = Path('/opt/1panel/www/sites/x.tcymc.space/security/cloudflare-ranges.conf')
+REALIP_TARGET = TARGET.with_name('cloudflare-realip.conf')
 CONTAINER = '1Panel-openresty'
+HEADER = ('# Managed by Misskey-X origin maintenance; official Cloudflare IPv4 + IPv6.\n'
+          '# Sources: https://www.cloudflare.com/ips-v4 and /ips-v6\n')
 
 
 def parse_ranges(text, version):
@@ -44,9 +47,11 @@ def fetch_ranges(version):
 
 
 def render_ranges(networks):
-    return ('# Managed by Misskey-X origin maintenance; official Cloudflare IPv4 + IPv6.\n'
-            '# Sources: https://www.cloudflare.com/ips-v4 and /ips-v6\n'
-            + ''.join(f'{network} 1;\n' for network in networks))
+    return HEADER + ''.join(f'{network} 1;\n' for network in networks)
+
+
+def render_realip(networks):
+    return HEADER + ''.join(f'set_real_ip_from {network};\n' for network in networks)
 
 
 def atomic_write(path, text):
@@ -72,29 +77,45 @@ def main():
     parser.add_argument('--check', action='store_true', help='Validate official data without writing or reloading')
     args = parser.parse_args()
     networks = fetch_ranges(4) + fetch_ranges(6)
-    rendered = render_ranges(networks)
+    rendered = {
+        TARGET: render_ranges(networks),
+        REALIP_TARGET: render_realip(networks),
+    }
     if args.check:
         print(f'Validated {len(networks)} official IPv4/IPv6 ranges; no changes applied.')
         return
-    if not TARGET.is_file():
-        raise RuntimeError('Initial allowlist must be installed and reviewed before automatic updates')
     with TARGET.with_suffix('.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        previous = TARGET.read_text()
+        if not all(path.is_file() for path in rendered):
+            raise RuntimeError('Both initial lists must be installed and reviewed before automatic updates')
+        previous = {path: path.read_text() for path in rendered}
         if previous == rendered:
-            print(f'No change: {len(networks)} Cloudflare ranges already current.')
+            print(f'No change: origin and real-IP trust lists already contain {len(networks)} Cloudflare ranges.')
             return
-        atomic_write(TARGET.with_suffix('.last-good'), previous)
-        atomic_write(TARGET, rendered)
+        for path, text in previous.items():
+            atomic_write(path.with_suffix('.last-good'), text)
         try:
+            # Each replacement is atomic. Never validate/reload a half-updated pair.
+            for path, text in rendered.items():
+                atomic_write(path, text)
             nginx('-t')
             nginx('-s', 'reload')
         except Exception:
-            atomic_write(TARGET, previous)
+            restore_errors = []
+            for path, text in previous.items():
+                try:
+                    atomic_write(path, text)
+                except Exception as error:
+                    restore_errors.append(f'{path.name}: {error}')
+            if restore_errors:
+                raise RuntimeError(
+                    'Could not restore both Cloudflare lists; refusing reload: '
+                    + '; '.join(restore_errors)
+                )
             nginx('-t')
             nginx('-s', 'reload')
             raise
-        print(f'Updated {len(networks)} Cloudflare ranges; config validated and OpenResty reloaded.')
+        print(f'Updated both lists with {len(networks)} Cloudflare ranges; config validated and OpenResty reloaded.')
 
 
 if __name__ == '__main__':
