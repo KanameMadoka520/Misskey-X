@@ -102,8 +102,8 @@ Misskey-X 是 x.tcymc.space 使用的 Misskey 二次开发版本。
 ### 访问保护与维护
 
 - 匿名用户搜索按照社区默认角色策略判断权限，避免因匿名用户为空而返回服务器错误；管理员和普通用户的权限检查继续生效。
-- 本站 OpenResty 配置限制社区入口仅接受 Cloudflare 回源及本机维护访问，同时保留 ACME 静态校验目录。配置仍在 1Panel 的网站配置中管理，应用端口仅监听本机回环地址。
-- 本站 OpenResty 只信任 Cloudflare 官方网段传来的 `CF-Connecting-IP`，并向 Misskey 传递单个已确认的访客 IP。1Panel WAF 的本站 CDN 自动识别关闭，使用 OpenResty 恢复后的地址；源站门禁仍检查原始连接来源，避免把访客误当回源节点，或把同一 CF 节点后的访客合并限速。现有 CC 阈值和媒体放行规则保持不变。
+- 本站 OpenResty 配置限制社区入口仅接受 Cloudflare、已核实的自有 x0 加速节点回源及本机维护访问，同时保留 ACME 静态校验目录。配置仍在 1Panel 的网站配置中管理，应用端口仅监听本机回环地址。
+- 本站 OpenResty 只信任 Cloudflare 官方网段和自有 x0 节点的精确来源地址，从 `X-Forwarded-For` 取直接回源节点追加的最后一个访客地址（`real_ip_recursive off`），并向 Misskey 传递单个已确认的访客 IP。1Panel WAF 的本站 CDN 自动识别关闭，使用 OpenResty 恢复后的地址；源站门禁仍检查原始连接来源。自有节点例外独立保存在站点配置中，不被 Cloudflare 网段更新任务覆盖；更换代理链路时需重新核实追加地址的行为。现有 CC 阈值和媒体放行规则保持不变。
 - `scripts/ops/update-cloudflare-ranges.py` 是本站专用的 Cloudflare IPv4/IPv6 网段维护脚本，通过 1Panel 计划任务运行。它用同一份官方数据维护 `cloudflare-ranges.conf` 回源名单和 `cloudflare-realip.conf` 真实 IP 信任名单；首次部署必须先安装两份配置。获取或校验失败时保留现有规则，写入两份文件后执行 Nginx 配置检查，失败时成对恢复；`--check` 仅检查官方列表。
 - 本阶段保留公开帖子分享、嵌入、附件以及原有匿名浏览范围，不改变链接大图预览功能。回源网段限制不等同于本站独享的客户端证书认证，也不提供源站链路带宽防护。
 
